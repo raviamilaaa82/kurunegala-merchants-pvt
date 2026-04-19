@@ -225,10 +225,10 @@ export async function updateDocument(id: string, prevState: DocumentState, formD
 }
 
 export async function createCustomer(prevState: CustomerState, formData: FormData) {
-    console.log("uploaded from");
-      const uploaded = JSON.parse(formData.get("uploadedFilesByDocument") || "{}");
-      console.log(uploaded);
-       console.log("uploaded");
+    // console.log("uploaded from");
+    //   const uploaded = JSON.parse(formData.get("uploadedFilesByDocument") || "{}");
+    //   console.log(uploaded);
+    //    console.log("uploaded");
     const validatedFields = CreateCustomer.safeParse({
         name: formData.get('name'),
         mobile: formData.get('mobile'),
@@ -247,10 +247,10 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
     const email = formData.get('email');
     const img_url = "/customers/evil-rabbit.png";
     try {
-        await sql`
-    INSERT INTO customers (name, email, image_url,mobile)
-    VALUES (${name}, ${email}, ${img_url},${mobile})
-  `;
+        //         await sql`
+        //     INSERT INTO customers (name, email, image_url,mobile)
+        //     VALUES (${name}, ${email}, ${img_url},${mobile})
+        //   `;
     } catch (error) {
 
         console.error(error);
