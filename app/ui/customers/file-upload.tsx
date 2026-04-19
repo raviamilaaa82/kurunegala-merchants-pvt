@@ -14,7 +14,7 @@ import {
     FileUploadItemProgress,
     FileUploadList,
     FileUploadTrigger,
-} from "@/components/diceui/file-upload";
+} from "@/components/ui/file-upload";
 
 export const title = "Linear Progress";
 
