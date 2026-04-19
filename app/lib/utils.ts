@@ -1,4 +1,11 @@
 import { Revenue } from './definitions';
+// import { type ClassValue, clsx } from "clsx";//newly add 
+// import { twMerge } from "tailwind-merge";//newly add
+
+//newly add fun
+// export function cn(...inputs: ClassValue[]) {
+//   return twMerge(clsx(inputs))
+// }
 
 export const formatCurrency = (amount: number) => {
   return (amount / 100).toLocaleString('en-US', {

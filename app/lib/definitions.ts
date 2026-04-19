@@ -39,6 +39,11 @@ export type LatestInvoice = {
   amount: string;
 };
 
+export type Documents = {
+  id: number;
+  document: string;
+  is_valid: boolean;
+}
 // The database returns a number for amount, but we later format it to a string with the formatCurrency function
 export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
   amount: number;
@@ -86,3 +91,5 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
+
+
