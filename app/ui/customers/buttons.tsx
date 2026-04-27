@@ -1,6 +1,6 @@
-import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteInvoice } from '@/app/lib/actions';
+import { disableCustomer } from '@/app/lib/actions';
 
 export function CreateCustomer() {
   return (
@@ -19,19 +19,24 @@ export function UpdateCustomer({ id }: { id: string }) {
     <Link
       href={`/dashboard/customers/${id}/edit`}
       className="rounded-md border p-2 hover:bg-gray-100"
+
     >
       <PencilIcon className="w-5" />
     </Link>
   );
 }
 
-export function DisableCustomer({ id }: { id: string }) {
-  const deleteInvoiceWithId = deleteInvoice.bind(null, id);
+
+
+export function DisableCustomer({ id, is_enabled }: { id: string, is_enabled: boolean }) {
+  const toggleCustomerStatus = disableCustomer.bind(null, id, !is_enabled);
   return (
-    <form action={deleteInvoiceWithId}>
+    <form action={toggleCustomerStatus}>
       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Delete</span>
-        <TrashIcon className="w-5" />
+        <span className="sr-only">Enabled</span>
+        {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />}
+        {/* <TrashIcon className="w-5" /> */}
+
       </button>
     </form>
   );

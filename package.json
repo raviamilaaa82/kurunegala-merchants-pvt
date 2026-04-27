@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev --turbopack",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next dev --turbopack",
     "start": "next start",
     "lint": "eslint ."
   },
@@ -13,6 +13,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@tailwindcss/forms": "^0.5.10",
     "bcrypt": "^5.1.1",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.8.0",
@@ -26,6 +27,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.7.3",
     "use-debounce": "^10.0.4",
+    "yet-another-react-lightbox": "^3.31.0",
     "zod": "^3.25.17"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
     "autoprefixer": "10.5.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.3",
     "postcss": "8.5.10",

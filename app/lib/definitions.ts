@@ -7,6 +7,9 @@ export type User = {
   name: string;
   email: string;
   password: string;
+  is_enabled: boolean,
+  phone: string,
+  user_name: string,
 };
 
 export type Customer = {
@@ -44,6 +47,15 @@ export type Documents = {
   document: string;
   is_valid: boolean;
 }
+
+export type ImageListType = {
+  document_id: number;
+  file_key: string;
+  file_name: string;
+  document_type: string
+}
+
+
 // The database returns a number for amount, but we later format it to a string with the formatCurrency function
 export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
   amount: number;
@@ -56,8 +68,8 @@ export type InvoicesTable = {
   email: string;
   image_url: string;
   date: string;
-  amount: number;
-  status: 'pending' | 'paid';
+  // amount: number;
+  // status: 'pending' | 'paid';
 };
 
 export type CustomersTableType = {
@@ -65,9 +77,11 @@ export type CustomersTableType = {
   name: string;
   email: string;
   image_url: string;
-  total_invoices: number;
-  total_pending: number;
-  total_paid: number;
+  mobile: string;
+  loc_link: string;
+  // total_invoices: number;
+  // total_pending: number;
+  // total_paid: number;
 };
 
 export type FormattedCustomersTable = {
@@ -75,9 +89,9 @@ export type FormattedCustomersTable = {
   name: string;
   email: string;
   image_url: string;
-  total_invoices: number;
-  total_pending: string;
-  total_paid: string;
+  // total_invoices: number;
+  // total_pending: string;
+  // total_paid: string;
 };
 
 export type CustomerField = {
@@ -91,5 +105,10 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
+export type Role = {
+  id: string;
+  role: string;
+  is_enabled: boolean,
 
+};
 

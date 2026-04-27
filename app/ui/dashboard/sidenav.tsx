@@ -3,8 +3,41 @@ import NavLinks from '@/app/ui/dashboard/nav-links';
 import AcmeLogo from '@/app/ui/acme-logo';
 import { PowerIcon } from '@heroicons/react/24/outline';
 import { signOut } from '@/auth';
+import { auth } from '@/auth';
+import {
+  UserGroupIcon,
+  HomeIcon,
+  DocumentDuplicateIcon,
+  UsersIcon
+} from '@heroicons/react/24/outline';
 
-export default function SideNav() {
+const links = [
+  { name: 'Home', href: '/dashboard', permission: null },
+  // {
+  //   name: 'Invoices',
+  //   href: '/dashboard/invoices',
+  //   icon: DocumentDuplicateIcon,
+  // },
+  { name: 'Customers', href: '/dashboard/customers', permission: null },
+  { name: 'Documents', href: '/dashboard/documents', permission: 'manage:documents' },
+  { name: 'Users', href: '/dashboard/users', permission: 'manage:users' },
+  { name: 'Roles', href: '/dashboard/roles', permission: 'manage:roles' },
+  { name: 'Permissions', href: '/dashboard/permissions', permission: 'manage:permissions' },
+
+];
+
+export default async function SideNav() {
+  const session = await auth();
+  const userPermissions: string[] = session?.user?.permissions ?? [];
+
+  // const visibleLinks = links.filter(link =>
+  //   link.permission === null || userPermissions.includes(link.permission)
+  // );
+
+  const visibleLinks = links.filter(link =>
+    !link.permission || userPermissions.includes(link.permission)
+  );
+
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2">
       <Link
@@ -16,7 +49,7 @@ export default function SideNav() {
         </div>
       </Link>
       <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
-        <NavLinks />
+        <NavLinks links={visibleLinks} />
         <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
         <form action={async () => {
           'use server';

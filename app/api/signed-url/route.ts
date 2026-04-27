@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     if (!key) return NextResponse.json({ error: "No file" }, { status: 400 });
 
     const command = new GetObjectCommand({
-        Bucket: process.env.R2_BUCKET_NAME!,
+        Bucket: process.env.R2_BUCKET!,
         Key: key,
 
     });
@@ -19,5 +19,16 @@ export async function GET(req: Request) {
         expiresIn: 600,
     });
 
+    //new code to 
+    // Proxy the image bytes — Next.js Image component fetches from localhost
+    // const r2Response = await fetch(signedUrl);
+    // const buffer = await r2Response.arrayBuffer(); // this is via server brower so i am going get direct from r2
+
     return NextResponse.json({ url: signedUrl });
+    // return new Response(buffer, {
+    //     headers: {
+    //         "Content-Type": r2Response.headers.get("Content-Type") || "image/jpeg",
+    //         "Cache-Control": "private, max-age=300", // cache for 5 min
+    //     },
+    // });
 }
