@@ -47,11 +47,43 @@ export type Documents = {
   document: string;
   is_valid: boolean;
 }
-
+export type Branches = {
+  id: number;
+  branch: string;
+  branch_code: string;
+  com_code: string;
+  com_id: string;
+  company: string;
+  is_valid: boolean;
+}
+export type Company = {
+  id: number;
+  company: string;
+  com_code: string;
+  is_valid: boolean;
+}
 export type ImageListType = {
   document_id: number;
   file_key: string;
   file_name: string;
+  document_type: string
+}
+
+export type ImageListTypeWithSubmit = {
+  submission_id: string
+  status: string,
+  agent_id: string,
+  submitted_at?: string;
+  admin_note?: string;
+  manager_note?: string;
+  customer_id: string;
+  customer_name: string;
+  customer_email?: string;
+  customer_mobile?: string;
+  document_id: number;
+  file_key: string;
+  file_name: string;
+  deleted_at?: string;
   document_type: string
 }
 
@@ -84,6 +116,21 @@ export type CustomersTableType = {
   // total_paid: number;
 };
 
+
+
+export type CustTableTypeWithSubmission = {
+  submission_id: string,
+  status: string,
+  customer_id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_mobile: string;
+  loc_link: string;
+  role_slug: string;       // 👈 add
+  role_name: string;
+
+};
+
 export type FormattedCustomersTable = {
   id: string;
   name: string;
@@ -106,9 +153,8 @@ export type InvoiceForm = {
   status: 'pending' | 'paid';
 };
 export type Role = {
-  id: string;
-  role: string;
-  is_enabled: boolean,
+  id: number;
+  display_name: string;
 
 };
 

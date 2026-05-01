@@ -5,11 +5,11 @@ import {
   CustomersTableType,
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
-import { fetchFilteredDocuments } from '@/app/lib/data';
-import { UpdateDocument, DisableDocument } from '@/app/ui/documents/buttons';
+import { fetchFilteredBranch } from '@/app/lib/data';
+import { UpdateBranch, DisableBranch } from '@/app/ui/branches/buttons';
 
 
-export default async function DocumentsTable({
+export default async function BranchesTable({
   query,
   currentPage
   // customers,
@@ -19,7 +19,7 @@ export default async function DocumentsTable({
   // customers: FormattedCustomersTable[];
 }) {
 
-  const documents = await fetchFilteredDocuments(query);
+  const branches = await fetchFilteredBranch(query);
 
   return (
     <div className="w-full">
@@ -32,9 +32,9 @@ export default async function DocumentsTable({
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden rounded-md bg-gray-50 p-2 md:pt-0">
               <div className="md:hidden">
-                {documents?.map((document) => (
+                {branches?.map((branch) => (
                   <div
-                    key={document.id}
+                    key={branch.id}
                     className="mb-2 w-full rounded-md bg-white p-4"
                   >
                     <div className="flex items-center justify-between border-b pb-4">
@@ -48,11 +48,11 @@ export default async function DocumentsTable({
                               width={28}
                               height={28}
                             /> */}
-                            <p>{document.document}</p>
+                            <p>{branch.branch}</p>
                           </div>
                         </div>
                         <p className="text-sm text-gray-500">
-                          {document.is_valid ? (
+                          {branch.is_valid ? (
                             <span className="text-green-600">✓ Valid</span>
                           ) : (
                             <span className="text-red-600">✗ Invalid</span>
@@ -60,19 +60,7 @@ export default async function DocumentsTable({
                         </p>
                       </div>
                     </div>
-                    {/* <div className="flex w-full items-center justify-between border-b py-5">
-                      <div className="flex w-1/2 flex-col">
-                        <p className="text-xs">Pending</p>
-                        <p className="font-medium">{customer.total_pending}</p>
-                      </div>
-                      <div className="flex w-1/2 flex-col">
-                        <p className="text-xs">Paid</p>
-                        <p className="font-medium">{customer.total_paid}</p>
-                      </div>
-                    </div> */}
-                    {/* <div className="pt-4 text-sm">
-                      <p>{customer.total_invoices} invoices</p>
-                    </div> */}
+
                   </div>
                 ))}
               </div>
@@ -83,23 +71,21 @@ export default async function DocumentsTable({
                       Id
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Document Type
+                      Branch
+                    </th>
+
+                    <th scope="col" className="px-3 py-5 font-medium">
+                      Company
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
                       Validity
                     </th>
-                    {/* <th scope="col" className="px-3 py-5 font-medium">
-                      Total Pending
-                    </th>
-                    <th scope="col" className="px-4 py-5 font-medium">
-                      Total Paid
-                    </th> */}
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-gray-200 text-gray-900">
-                  {documents.map((document) => (
-                    <tr key={document.id} className="group">
+                  {branches.map((branch) => (
+                    <tr key={branch.id} className="group">
                       <td className="whitespace-nowrap bg-white py-5 pl-4 pr-3 text-sm text-black group-first-of-type:rounded-md group-last-of-type:rounded-md sm:pl-6">
                         <div className="flex items-center gap-3">
                           {/* <Image
@@ -109,31 +95,31 @@ export default async function DocumentsTable({
                             width={28}
                             height={28}
                           /> */}
-                          <p>{document.id}</p>
+                          <p>{branch.id}</p>
                         </div>
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
-                        {document.document}
+                        {branch.branch}
+                      </td>
+
+                      <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
+                        {branch.company}
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
-                        {document.is_valid ? (
+                        {branch.is_valid ? (
                           <span className="text-green-600">✓ Valid</span>
                         ) : (
                           <span className="text-red-600">✗ Invalid</span>
                         )}
                       </td>
-                      {/* <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
-                        {customer.total_pending}
-                      </td>
-                      <td className="whitespace-nowrap bg-white px-4 py-5 text-sm group-first-of-type:rounded-md group-last-of-type:rounded-md">
-                        {customer.total_paid}
-                      </td> */}
+
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         <div className="flex justify-end gap-3">
-                          {/* <UpdateDocument id={document.id.toString()} /> */}
-                          <DisableDocument id={document.id.toString()} is_valid={document.is_valid} />
+                          {/* <UpdateBranch id={branch.id.toString()} /> */}
+                          <DisableBranch id={branch.id.toString()} is_valid={branch.is_valid} />
                         </div>
                       </td>
+
                     </tr>
                   ))}
                 </tbody>

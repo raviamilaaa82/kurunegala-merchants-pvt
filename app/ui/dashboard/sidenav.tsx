@@ -21,6 +21,7 @@ const links = [
   { name: 'Customers', href: '/dashboard/customers', permission: null },
   { name: 'Documents', href: '/dashboard/documents', permission: 'manage:documents' },
   { name: 'Users', href: '/dashboard/users', permission: 'manage:users' },
+  { name: 'Branches', href: '/dashboard/branches', permission: 'manage:branch' },
   { name: 'Roles', href: '/dashboard/roles', permission: 'manage:roles' },
   { name: 'Permissions', href: '/dashboard/permissions', permission: 'manage:permissions' },
 

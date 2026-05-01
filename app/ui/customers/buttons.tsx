@@ -1,6 +1,6 @@
-import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon, ArrowDownRightIcon, CheckCircleIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { disableCustomer } from '@/app/lib/actions';
+import { acceptSubmissionAdminOrManager, rejectSubmissionAdminOrManager } from '@/app/lib/actions';
 
 export function CreateCustomer() {
   return (
@@ -14,10 +14,12 @@ export function CreateCustomer() {
   );
 }
 
-export function UpdateCustomer({ id }: { id: string }) {
+export function UpdateCustomer({ id, submissionId }: { id: string, submissionId: string }) {
   return (
     <Link
-      href={`/dashboard/customers/${id}/edit`}
+      // href={`/dashboard/customers/${id}/edit`}
+      //going to use search query param instead of creating new document
+      href={`/dashboard/customers/${id}/edit?submissionId=${submissionId}`}
       className="rounded-md border p-2 hover:bg-gray-100"
 
     >
@@ -26,16 +28,69 @@ export function UpdateCustomer({ id }: { id: string }) {
   );
 }
 
+export function UploadDocuments({ id }: { id: string }) {
+  return (
+    <Link
+      href={`/dashboard/customers/${id}/upload`}
+      className="rounded-md border p-2 hover:bg-gray-100"
+
+    >
+      <ArrowDownRightIcon className="w-5" />
+    </Link>
+  );
+}
+//temp function for use sesion id+customer id
+export function UploadDocumentsWithSessionId({ id, submission }: { id: string, submission: any }) {
+
+  return (
+    // {`/dashboard/customers/${id}/upload/${submissionId}`}
+    <Link
+      href={`/dashboard/customers/${id}/upload?submissionId=${submission.submission_id}&name=${encodeURIComponent(submission.customer_name)}`}
+      className="rounded-md border p-2 hover:bg-gray-100"
+
+    >
+      <ArrowDownRightIcon className="w-5" />
+    </Link>
+  );
+}
+
+// export function DisableCustomer({ id, is_enabled }: { id: string, is_enabled: boolean }) {
+//   const toggleCustomerStatus = disableCustomer.bind(null, id, !is_enabled);
+//   return (
+//     <form action={toggleCustomerStatus}>
+//       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+//         <span className="sr-only">Enabled</span>
+//         {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />}
+//         {/* <TrashIcon className="w-5" /> */}
+
+//       </button>
+//     </form>
+//   );
+// }
 
 
-export function DisableCustomer({ id, is_enabled }: { id: string, is_enabled: boolean }) {
-  const toggleCustomerStatus = disableCustomer.bind(null, id, !is_enabled);
+export function AcceptSumbission({ submissionId }: { submissionId: string }) {
+  const toggleCustomerStatus = acceptSubmissionAdminOrManager.bind(null, submissionId);
   return (
     <form action={toggleCustomerStatus}>
       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Enabled</span>
-        {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />}
-        {/* <TrashIcon className="w-5" /> */}
+        {/* {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />} */}
+        <CheckIcon className="w-5" />
+
+      </button>
+    </form>
+  );
+}
+
+export function RejectSumbission({ submissionId }: { submissionId: string }) {
+  const toggleCustomerStatus = rejectSubmissionAdminOrManager.bind(null, submissionId);
+  return (
+    <form action={toggleCustomerStatus}>
+      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+        <span className="sr-only">Enabled</span>
+        {/* {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />} */}
+        <XMarkIcon className="w-5" />
 
       </button>
     </form>

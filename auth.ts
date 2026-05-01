@@ -27,7 +27,7 @@ export const { auth, signIn, signOut } = NextAuth({
         Credentials({
             async authorize(credentials) {
 
-                console.log("1. authorize called with email:", credentials?.email);
+                // console.log("1. authorize called with email:", credentials?.email);
 
                 const parsedCredentials = z.object({ email: z.string().email(), password: z.string().min(6) })
                     .safeParse(credentials);
@@ -39,6 +39,7 @@ export const { auth, signIn, signOut } = NextAuth({
                         SELECT
                             u.id,
                             u.email,
+                            u.name,
                             u.password,
                             r.id           AS role_id,
                             r.slug         AS role_slug,
@@ -79,6 +80,7 @@ export const { auth, signIn, signOut } = NextAuth({
                     return {
                         id: user.id,
                         email: user.email,
+                        name: user.name,
                         roleId: user.role_id,
                         roleSlug: user.role_slug,
                         roleName: user.role_name,

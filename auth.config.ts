@@ -40,6 +40,7 @@ export const authConfig = {
             if (user) {
                 // token.id = user.id;
                 token.sub = user.id;
+                token.name = user.name;
                 token.roleId = user.roleId;
                 token.roleSlug = user.roleSlug;
                 token.roleName = user.roleName;
@@ -50,6 +51,7 @@ export const authConfig = {
         // ✅ Added: expose to session (client-side) //newly added
         async session({ session, token }) {
             session.user.id = token.sub as string;
+            session.user.name = token.name;
             session.user.roleId = token.roleId;
             session.user.roleSlug = token.roleSlug;
             session.user.roleName = token.roleName;

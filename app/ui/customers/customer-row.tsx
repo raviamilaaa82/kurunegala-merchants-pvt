@@ -13,7 +13,8 @@ import {
     DialogTrigger,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { UpdateCustomer, DisableCustomer } from './buttons';
+// import { UpdateCustomer, DisableCustomer, UploadDocuments } from './buttons';
+import { UpdateCustomer, DisableCustomer, UploadDocuments } from '@/app/ui/customers/buttons';
 import { PencilIcon, PlusIcon, TrashIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
 
 
@@ -61,6 +62,8 @@ export default function CustomerRow({ customer, variant = "desktop" }: { custome
             setLoading(true);
             fetch(`/api/get-images?masterId=${customer.id}`).then((res) => res.json()).then((data) => {
                 setImages(data.images || []);
+                console.log("data.images ne3");
+                console.log(data.images);
                 setLoading(false);
 
             });
@@ -144,6 +147,9 @@ export default function CustomerRow({ customer, variant = "desktop" }: { custome
                                         );
                                     })}
                                 </div>
+                                {/* <div className="flex flex-row gap-4 flex-wrap">
+                                    <p>gap between</p>
+                                </div> */}
                             </div>
                         );
                     })}
@@ -230,8 +236,9 @@ export default function CustomerRow({ customer, variant = "desktop" }: { custome
             >
                 <ViewColumnsIcon className="w-5" />
             </button>
-            <UpdateCustomer id={customer.id} />
-            <DisableCustomer id={customer.id} is_enabled={customer.is_enabled} />
+            {/* <UpdateCustomer id={customer.id} />
+            <DisableCustomer id={customer.id} is_enabled={customer.is_enabled} /> */}
+            {/* <UploadDocuments id={customer.id} /> */}
         </div>
     );
 

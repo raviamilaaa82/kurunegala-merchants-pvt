@@ -169,7 +169,7 @@ export default function Form({ roles }: { roles: Role[] }) {
 
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
-                  {role.role}
+                  {role.display_name}
                 </option>
               ))}
             </select>

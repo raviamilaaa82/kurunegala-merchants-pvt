@@ -36,8 +36,6 @@ export default function Form() {
               placeholder="Enter role name"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               aria-describedby="role-error"
-
-
             />
           </div>
 
@@ -49,8 +47,26 @@ export default function Form() {
                 </p>
               ))}
           </div>
-        </div>
 
+
+        </div>
+        <div className="mb-4">
+          <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+            Slug
+          </label>
+          <div className="relative">
+            <input
+              id="slug"
+              name="slug"
+              type="text"
+
+              placeholder="Enter a slug"
+              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              aria-describedby="role-error"
+            />
+          </div>
+
+        </div>
 
       </div>
       {state.message && (

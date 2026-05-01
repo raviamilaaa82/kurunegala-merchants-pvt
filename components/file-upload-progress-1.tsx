@@ -23,14 +23,16 @@ export const title = "Linear Progress";
 interface FileUploadProgressProps {
   onFilesChange?: (files: File[]) => void;       // called whenever file list changes  
   onUploadComplete?: (file: File, info: { key: string; url: string }) => void;
-  uploadId?: string      // called when a single file upload finishes
-
+  uploadId?: string
+  customerId?: string     // called when a single file upload finishes
+  submissionId: number | null;                  // ✅ receive from parent
+  onSubmissionCreated: (id: number) => void;
 }
 
 //uploadId=documentId
-const Example = ({ onFilesChange, onUploadComplete, uploadId }: FileUploadProgressProps) => {
+const Example = ({ onFilesChange, onUploadComplete, uploadId, customerId, submissionId, onSubmissionCreated }: FileUploadProgressProps) => {
   const [files, setFiles] = React.useState<File[]>([]);
-
+  //newly add for request flow hadle. creating submissionId
 
   // Notify parent when files change
   React.useEffect(() => {
@@ -88,7 +90,7 @@ const Example = ({ onFilesChange, onUploadComplete, uploadId }: FileUploadProgre
       processedFiles.push(finalFile);
 
     }
-    // setFiles([]); // ✅ clears old progress bars
+
     setFiles([]); // triggers SET_FILES → clears Map
     await new Promise(resolve => requestAnimationFrame(resolve)); // wait for render
     await new Promise(resolve => requestAnimationFrame(resolve));
@@ -105,10 +107,20 @@ const Example = ({ onFilesChange, onUploadComplete, uploadId }: FileUploadProgre
             documentId: uploadId,
             fileName: file.name,
             fileType: file.type,
+            submissionId, //newly add for request flow hadle. sending submissionId at first time it is empty,now its not empty create when customer create
+            customerId,//newly add for request flow hadle. sending submissionId at first time it is empty
+
           }),
         });
 
-        const { signedUrl, key } = await res.json(); // in here signedUrl is for only put (upload)
+        // const { signedUrl, key } = await res.json(); // in here signedUrl is for only put (upload) existingn code
+        const { signedUrl, key, resolvedSubmissionId } = await res.json(); // //newly add for request flow hadle. getting 
+        console.log("from file-upload-pro" + resolvedSubmissionId);
+        // setSubmissionId(resolvedSubmissionId);//newly add for setting submission id for next upload
+        // notify parent instead of local setState
+        if (!submissionId) {
+          onSubmissionCreated(resolvedSubmissionId);
+        }
 
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();

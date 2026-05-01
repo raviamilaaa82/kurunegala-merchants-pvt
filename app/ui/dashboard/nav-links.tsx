@@ -37,6 +37,7 @@ const iconMap: Record<string, React.ElementType> = {
   'Users': UserGroupIcon,
   'Roles': UserGroupIcon,
   'Permissions': UsersIcon,
+  'Branches': UsersIcon,
 };
 type NavLink = {
   name: string;

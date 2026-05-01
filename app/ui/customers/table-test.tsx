@@ -5,12 +5,12 @@ import {
   CustomersTableType,
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
-import { fetchFilteredCustomers } from '@/app/lib/data';
-import { UpdateCustomer, DisableCustomer, UploadDocuments } from './buttons';
+import { fetchFilteredCustomers, fetchFilteredSubmission } from '@/app/lib/data';
+// import { UpdateCustomer, DisableCustomer, UploadDocuments } from './buttons';
 // import StatusTabs from './status-tabs';
 
 
-import CustomerRow from './customer-row';
+import SubmissionRow from './submission-row';
 
 
 
@@ -18,15 +18,21 @@ export default async function CustomersTable({
   query,
   currentPage,
   status,
+  userId,
+  roleId
   // customers,
 }: {
   query: string,
   currentPage: number,
   status: string;
+  userId: string,
+  roleId?: number,
   // customers: FormattedCustomersTable[];
 }) {
 
-  const customers = await fetchFilteredCustomers(query);
+
+  // const customers = await fetchFilteredCustomers(query);
+  const custWithSubmissions = await fetchFilteredSubmission(query, currentPage, status, userId, roleId);
   return (
     <div className="w-full">
       {/* <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
@@ -38,8 +44,9 @@ export default async function CustomersTable({
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden rounded-md bg-gray-50 p-2 md:pt-0">
               <div className="md:hidden">
-                {customers?.map((customer) => (
-                  <CustomerRow key={customer.id} customer={customer} variant="mobile" />
+                {custWithSubmissions?.map((submission) => (
+                  // <CustomerRow key={customer.id} customer={customer} variant="mobile" />
+                  <SubmissionRow key={submission.submission_id} submission={submission} variant="mobile" />
                 ))}
               </div>
               <table className="hidden min-w-full rounded-md text-gray-900 md:table">
@@ -62,10 +69,14 @@ export default async function CustomersTable({
                 </thead>
 
                 <tbody className="divide-y divide-gray-200 text-gray-900">
-                  {customers.map((customer) => (
+                  {/* {customers.map((customer) => (
 
                     <CustomerRow key={customer.id} customer={customer} variant="desktop" />
 
+                  ))} */}
+                  {custWithSubmissions?.map((submission) => (
+                    // <CustomerRow key={customer.id} customer={customer} variant="mobile" />
+                    <SubmissionRow key={submission.submission_id} submission={submission} variant="desktop" />
                   ))}
                 </tbody>
               </table>
