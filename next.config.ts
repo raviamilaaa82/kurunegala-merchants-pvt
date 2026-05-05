@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "your-domain.com",
+        hostname: "app.seewalimotors.com",
       },
     ],
     localPatterns: [
