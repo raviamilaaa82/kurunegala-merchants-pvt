@@ -6,7 +6,7 @@ import {
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
 import { fetchFilteredBranch } from '@/app/lib/data';
-import { UpdateBranch, DisableBranch } from '@/app/ui/branches/buttons';
+import { DisableBranch } from '@/app/ui/branches/buttons';
 
 
 export default async function BranchesTable({
@@ -60,7 +60,16 @@ export default async function BranchesTable({
                         </p>
                       </div>
                     </div>
-
+                    <div className="flex w-full items-center justify-between border-b py-5">
+                      <div className="flex w-1/2 flex-col">
+                        {/* <p className="text-xs">Phone</p> */}
+                        <p className="font-medium">{branch.company}</p>
+                      </div>
+                      {/* <div className="flex w-1/2 flex-col">
+                        <p className="text-xs">Paid</p>
+                        <p className="font-medium">{customer.total_paid}</p>
+                      </div> */}
+                    </div>
                   </div>
                 ))}
               </div>

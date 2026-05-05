@@ -1,6 +1,6 @@
 import Form from '@/app/ui/customers/upload-form';
 import Breadcrumbs from '@/app/ui/customers/breadcrumbs';
-import { fetchCustomerById, fetchImageListFromLocalDb, fetchDocuments, fetchImagesKeysbWithSubmission } from '@/app/lib/data';
+import { fetchCustomerById, fetchDocuments, fetchImagesKeysbWithSubmission } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
@@ -22,23 +22,9 @@ export default async function Page({
     // const mode = sp?.mode === 'create' ? 'create' : 'edit';
     const mode = sp?.mode ?? "edit";
 
-    // const [customers, documents] = await Promise.all([
-    //     fetchCustomerById(id),
-
-    //     fetchDocuments(),
-    // ]);
-
     const rawFiles = mode === 'edit' && submissionId
         ? await fetchImagesKeysbWithSubmission(submissionId)
         : [];
-
-    // // Log to see what's coming from DB
-    // console.log('raw files:', JSON.stringify(rawFiles, null, 2));
-
-    // const validFiles = rawFiles.filter((file: any) => file?.file_key && file.file_key.trim() !== '');
-    // if (validFiles.length === 0) {
-    //     return NextResponse.json({ images: [] });
-    // }
 
 
 
@@ -95,7 +81,7 @@ export default async function Page({
                     },
                 ]}
             />
-            {/* images={images} */}
+
             <Form documents={documents} customerId={id} subminId={submissionId}
                 name={decodeURIComponent(name)} existingImages={mode === 'edit' ? existingImages : []} />
         </main>

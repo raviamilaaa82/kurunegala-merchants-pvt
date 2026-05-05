@@ -40,21 +40,26 @@ export function RoleFilter({ roles, userId, roleId }: { roles: Role[], userId: s
         });
     }
     return (
-        <select
-            defaultValue={roleId}
-            // disabled={isPending}
-            onChange={(e) =>
-                handleRoleChange(userId, Number(e.target.value))
-            }
-            className="border rounded px-2 py-1 text-sm bg-white
-                                   focus:outline-none focus:ring-2 focus:ring-blue-400
-                                   disabled:opacity-50"
-        >
-            {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                    {role.display_name}
-                </option>
-            ))}
-        </select>
+        <div className="flex w-full">
+            {/* gap-1 border-b */}
+
+            <div className="relative w-full min-w-0">
+                <select
+                    defaultValue={roleId}
+                    // disabled={isPending}
+                    onChange={(e) =>
+                        handleRoleChange(userId, Number(e.target.value))
+                    }
+                    // className="border rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+                    className="peer block w-full sm:w-64 max-w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                >
+                    {roles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                            {role.display_name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </div>
     );
 }

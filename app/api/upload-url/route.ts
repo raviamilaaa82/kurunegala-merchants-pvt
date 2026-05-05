@@ -13,8 +13,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }//newly added for creating submission id. for follow request flow
     const agentId = session.user.id;//newly added for creating submission id. for follow request flow
-    // console.log("from upload-url/route agentid" + agentId);
-    // const { documentId, fileName, fileType } = await req.json(); //this is existing code
+
     const { documentId, fileName, fileType, submissionId, customerId } = await req.json();////newly added for creating submission id. for follow request flow
 
     if (!documentId || !fileName || !fileType || !customerId) {
@@ -22,27 +21,6 @@ export async function POST(req: Request) {
     }
 
 
-    // 2. create submission if first upload
-    // let resolvedSubmissionId = submissionId;////newly added for creating submission id. for follow request flow
-    // console.log("resolvedSubmissionId" + resolvedSubmissionId);
-    //no need now submission id always exists. because its create when customer create
-    // if (!resolvedSubmissionId) {
-    //     console.log("submissionId" + "true");
-
-
-
-    //     const result = await createSubmissionRecord(agentId, customerId, 'draft');
-    //     console.log("result" + result);
-    //     if (!result.success) {
-    //         console.log("!result.success" + result);
-    //         return NextResponse.json({ error: result.error }, { status: 500 });
-    //     }
-    //     resolvedSubmissionId = result.id;
-    //     console.log("result.id" + result.id);
-    //     // console.log("inside if(!resolvedSubmissionId) upload-url/route first time result.id" + result.id);
-    // } else {
-    //     console.log("submissionId" + "false");
-    // }////newly added for creating submission id. for follow request flow
 
     const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'jpg';
     const safeExt = ['jpg', 'jpeg', 'png', 'pdf'].includes(fileExtension) ? fileExtension : 'jpg'; // whitelist
@@ -66,8 +44,7 @@ export async function POST(req: Request) {
 
 
     // 5. save Document record ////newly added for creating submission id. for follow request flow
-    // console.log("sending document tble record resolvedSubmissionId" + resolvedSubmissionId + "fileName" + fileName + "key" + key);
-    // console.log("values", resolvedSubmissionId, key, fileName, documentId, customerId);
+
     await createDocumentRecord(submissionId, key, fileName, documentId, customerId);
 
 

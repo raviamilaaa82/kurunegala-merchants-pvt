@@ -128,8 +128,15 @@ export type CustTableTypeWithSubmission = {
   loc_link: string;
   role_slug: string;       // 👈 add
   role_name: string;
+  image_url: string;
+  cust_code: string;
 
 };
+export type FinalUploadKey = {
+  id: string;
+  file_key: string;
+  file_name: string;
+}
 
 export type FormattedCustomersTable = {
   id: string;
@@ -157,4 +164,14 @@ export type Role = {
   display_name: string;
 
 };
+
+
+export type ActivityHistory = {
+  id: string;
+  user_id: string;
+  user_name: string;
+  action: string;
+  page: string;
+  created_at: string;
+}
 

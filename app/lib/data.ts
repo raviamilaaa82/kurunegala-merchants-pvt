@@ -12,7 +12,9 @@ import {
   CustTableTypeWithSubmission,
   ImageListTypeWithSubmit,
   Branches,
-  Company
+  Company,
+  FinalUploadKey,
+  ActivityHistory
   // Role
 
 } from './definitions';
@@ -48,7 +50,7 @@ type RoleWithPermisson = {
 };
 
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 100;
 //newly added code
 export async function fetchUsersWithRoles() {
   const users = await sql<UserWithRole[]>`
@@ -144,11 +146,7 @@ export async function fetchAllRolesWithTheirPermissions() {
 
 export async function fetchRevenue() {
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
 
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const data = await sql<Revenue[]>`SELECT * FROM revenue`;
 
@@ -183,9 +181,7 @@ export async function fetchLatestInvoices() {
 
 export async function fetchCardData() {
   try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
+
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
     const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
     const invoiceStatusPromise = sql`SELECT
@@ -378,41 +374,49 @@ export async function fetchFilteredCustomers(query: string) {
 }
 
 //fetchin customer with submission 
-export async function fetchFilteredSubmission(query: string, currentPage: number, status: string, agentId: string | null = null, roleId: number | undefined) {
+export async function fetchFilteredSubmission(query: string, currentPage: number, status: string, agentId: string | null = null, roleId: number | undefined, branchId: string | null = null) {
   try {
     let new_status = '';
     const session = await auth();
-    if (!session?.user?.id) {
-      throw new Error('Unauthorized');
-    }
+    // if (!session?.user?.id) {
+    //   throw new Error('Unauthorized');
+    // }
+
+    const userId = session?.user?.id ?? '';
     const role_id = session?.user.roleId;
-    const role_slug = session?.user.roleSlug;
+    // const role_slug = session?.user.roleSlug;
+    const role_slug = session?.user.roleSlug ?? '';
 
 
-    const resolvedAgentId = role_slug === 'agent' ? agentId : null; // this line make only agent for id as parameter to query. admin and manager dont need.
+    // const resolvedAgentId = role_slug === 'agent' ? agentId : null; // this line make only agent for id as parameter to query. admin and manager dont need.
+    // const resolvedAgentId = role_slug === 'agent' ? agentId : userId;
+    const resolvedAgentId = userId;
+
+
+
+    const isAgentOrDraftOnly = role_slug === 'agent';
+
 
     let statusFilter: string[] = [];
-
-
     if (role_slug === 'admin') {
       const map: Record<string, string[]> = {
-        pending: ['pending_admin'],
+        draft: ['draft'],
+        pending: ['pending_admin', 'pending_manager'],
         rejected: ['admin_rejected', 'manager_rejected'],
       };
-      // 👇 when status is '' show only admin-relevant statuses
       statusFilter = status === ''
-        ? ['pending_admin', 'admin_rejected', 'manager_rejected']  // admin default view
+        ? ['draft', 'pending_admin', 'admin_rejected', 'manager_rejected']
         : (map[status] ?? []);
 
     } else if (role_slug === 'manager') {
       const map: Record<string, string[]> = {
+        draft: ['draft'],
         pending: ['pending_manager'],
         rejected: ['manager_rejected'],
         approved: ['approved'],
       };
-      // 👇 when status is '' show only manager-relevant statuses
       statusFilter = status === ''
-        ? ['pending_manager', 'manager_rejected', 'approved']      // manager default view
+        ? ['draft', 'pending_manager', 'manager_rejected', 'approved']
         : (map[status] ?? []);
 
     } else if (role_slug === 'agent') {
@@ -421,47 +425,66 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
         pending: ['pending_admin'],
         rejected: ['admin_rejected', 'manager_rejected'],
       };
-      // 👇 when status is '' show only agent-relevant statuses
       statusFilter = status === ''
-        ? ['draft', 'pending_admin', 'admin_rejected', 'manager_rejected']  // agent default view
+        ? ['draft', 'pending_admin', 'admin_rejected', 'manager_rejected']
         : (map[status] ?? []);
     }
 
     if (statusFilter.length === 0 && status !== '') {
-      statusFilter = ['__none__']; // 👈 impossible status, returns 0 rows
+      statusFilter = ['__none__'];
     }
 
 
     const ITEMS_PER_PAGE = 6;
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-    const agent = agentId ?? null;
+    // const agent = agentId ?? null;
 
 
-    const data = await sql<CustTableTypeWithSubmission[]>`
-    SELECT 
-        s.id AS submission_id,
-        s.status,
-        s.admin_note,
-        s.manager_note,
-        c.id AS customer_id,
-        c.name AS customer_name,
-        c.email AS customer_email,
-        c.mobile AS customer_mobile,
-        c.loc_link,
-        r.slug AS role_slug,            
-        r.display_name AS role_name    
-    FROM submission s
-    LEFT JOIN customers c ON c.id = s.customer_id
-    LEFT JOIN users u ON u.id::text = s.agent_id::text
-    LEFT JOIN roles r ON r.id = u.role_id
-    WHERE (
-        c.name ILIKE ${`%${query}%`} OR
-        c.email ILIKE ${`%${query}%`}
-    ) AND s.status::text = ANY(${statusFilter}::text[])         
-    AND (${resolvedAgentId}::text IS NULL OR s.agent_id::text = ${resolvedAgentId}::text)      
+    const data = sql<CustTableTypeWithSubmission[]>`
+     SELECT 
+      s.id AS submission_id,
+      s.status,
+      s.admin_note,
+      s.manager_note,
+      c.id AS customer_id,
+      c.name AS customer_name,
+      c.email AS customer_email,
+      c.image_url,
+      c.mobile AS customer_mobile,
+      c.loc_link,
+      c.cust_code,
+      r.slug AS role_slug,            
+      r.display_name AS role_name    
+  FROM submission s
+  LEFT JOIN customers c ON c.id = s.customer_id
+  LEFT JOIN users u ON u.id::text = s.agent_id::text
+  LEFT JOIN roles r ON r.id = u.role_id
+  WHERE (
+      c.name ILIKE ${`%${query}%`} OR
+      c.cust_code ILIKE ${`%${query}%`} OR
+      c.mobile ILIKE ${`%${query}%`}
+     
+  )
+  AND s.status::text = ANY(${statusFilter}::text[])
+  AND (${branchId}::text IS NULL OR c.branch_id::text = ${branchId}::text)
+  AND (  
+     CASE
+        -- DRAFT rules
+        WHEN s.status = 'draft' AND ${isAgentOrDraftOnly} THEN 
+            s.agent_id::text = ${userId}::text          -- own draft
+            OR r.slug IN ('admin', 'manager')            -- OR created by admin/manager
+        WHEN s.status = 'draft' THEN 
+            s.agent_id::text = ${userId}::text           -- admin/manager: own drafts only
+
+        -- NON-DRAFT rules
+        WHEN ${isAgentOrDraftOnly} THEN 
+            s.agent_id::text = ${userId}::text           -- agent: own records only
+        ELSE TRUE                                        -- admin/manager: see all
+    END
+  )
     ORDER BY s.id DESC
-    LIMIT ${ITEMS_PER_PAGE}
-    OFFSET ${offset}
+  LIMIT ${ITEMS_PER_PAGE}
+  OFFSET ${offset}
 `;
 
     return data;
@@ -516,7 +539,21 @@ ORDER BY d.id;
 }
 
 
+export async function fetchImagesKeyForUploadFinalDoc(submissionId: string | null) {
 
+  try {
+    const data = await sql<FinalUploadKey[]>`
+    SELECT id, file_key, file_name 
+	FROM public.document WHERE submission_id = ${submissionId};     
+`;
+
+    return data;
+
+  } catch (error) {
+
+  }
+
+}
 
 export async function fetchDocuments() {
   try {
@@ -546,13 +583,10 @@ export async function fetchFilteredDocuments(query: string) {
 		SELECT
     id,
     document,
-    is_valid
-		 
-		FROM tbl_documents
-		
+    is_valid		 
+		FROM tbl_documents		
 		WHERE
-		  document ILIKE ${`%${query}%`} 
-		
+		  document ILIKE ${`%${query}%`} 		
 		ORDER BY id ASC
 	  `;
 
@@ -585,10 +619,8 @@ export async function fetchDocumentById(id: string) {
       SELECT
     id,
     document,
-    is_valid
-		 
-		FROM tbl_documents
-		
+    is_valid		 
+		FROM tbl_documents		
 		WHERE id = ${id};
     `;
     return data[0];
@@ -635,8 +667,11 @@ export async function fetchCustomerBySubmissionId(submissionId: string | null) {
       c.id AS customer_id,
       c.name AS customer_name,
       c.email AS customer_email,
+      c.image_url,
       c.mobile AS customer_mobile,
-      c.loc_link
+      c.loc_link,
+      c.cust_code,
+      c.branch_id
   FROM submission s
   LEFT JOIN customers c ON c.id = s.customer_id
   WHERE s.id=${submissionId};
@@ -673,22 +708,6 @@ export async function fetchCustomerById(id: string) {
 
 }
 
-// export async function fetchUsers() {
-//   try {
-//     const users = await sql<User[]>`
-//       SELECT
-//         id, name, email
-//       FROM users
-//       ORDER BY id ASC
-//     `;
-
-//     return users;
-//   } catch (err) {
-//     console.error('Database Error:', err);
-//     throw new Error('Failed to fetch all users.');
-//   }
-
-// }
 
 export async function fetchFilteredUsers(query: string) {
   try {
@@ -761,24 +780,6 @@ export async function fetchFilteredRoles(query: string) {
 }
 
 
-// export async function fetchRoleById(id: string) {
-
-//   try {
-//     const data = await sql<Role[]>`
-//   SELECT
-//         id, role, is_enabled
-//       FROM roles			
-// 		WHERE
-// 		  id= ${id};		
-//     `;
-//     return data[0];
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch user table.');
-
-//   }
-
-// }
 
 export async function fetchRolePages(query: string) {
   try {
@@ -849,13 +850,8 @@ JOIN company c ON b.com_id = c.id
 WHERE
 		  b.branch ILIKE ${`%${query}%`} OR
        c.company ILIKE ${`%${query}%`}
-
-ORDER BY id ASC
-
-		
+ORDER BY id ASC		
 	  `;
-
-
     return data;
   } catch (err) {
     console.error('Database Error:', err);
@@ -867,6 +863,76 @@ ORDER BY id ASC
 export async function fetchBranchPages(query: string) {
   try {
     const data = await sql`SELECT COUNT(*) FROM branches WHERE branch ILIKE ${`%${query}%`}`;
+
+    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of customers.');
+  }
+
+}
+export async function fetchdBranches() {
+
+  try {
+    const data = await sql<Branches[]>`
+SELECT id, branch, is_valid, branch_code, com_id
+	FROM branches WHERE is_valid='true'
+ORDER BY id ASC	`;
+    return data;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch branches table.');
+  }
+}
+
+export async function fetchUserActivity(query: string) {
+
+  try {
+    const data = await sql<ActivityHistory[]>`
+        SELECT 
+            ua.id,
+            ua.user_name,
+            ua.action,
+            ua.page,
+            ua.created_at,
+            r.display_name AS role_name
+        FROM user_activity ua
+        LEFT JOIN users u ON u.id::text = ua.user_id
+        LEFT JOIN roles r ON r.id = u.role_id
+        WHERE 
+        ua.user_name ILIKE ${`%${query}%`} OR
+        ua.page ILIKE ${`%${query}%`} OR
+         ua.created_at::text ILIKE ${`%${query}%`} OR
+         r.display_name ILIKE ${`%${query}%`}
+        ORDER BY ua.created_at DESC
+        LIMIT 100
+    `;
+    return data;
+
+
+  } catch (error) {
+
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch activity details.');
+  }
+
+}
+
+
+export async function fetchUserActivityPages(query: string) {
+  try {
+    const data = await sql`
+        SELECT COUNT(*)
+        FROM user_activity ua
+        LEFT JOIN users u ON u.id::text = ua.user_id
+        LEFT JOIN roles r ON r.id = u.role_id
+        WHERE 
+        ua.user_name ILIKE ${`%${query}%`} OR
+        ua.page ILIKE ${`%${query}%`} OR
+         ua.created_at::text ILIKE ${`%${query}%`} OR
+         r.display_name ILIKE ${`%${query}%`}         
+           `;
 
     const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
     return totalPages;

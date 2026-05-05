@@ -6,8 +6,21 @@ import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { CreateUser } from "@/app/ui/users/buttons";
 import Pagination from "@/app/ui/users/pagination";
 import { fetchUsersPages } from "@/app/lib/data";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export default async function Page(props: { searchParams?: Promise<{ query?: string, page?: string }> }) {
+
+    const session = await auth();
+
+    if (!session?.user?.id) {
+        redirect("/login");  // ✅ use redirect, not NextResponse
+    }
+
+    const agentId = session?.user.id;
+    const agentRoleId = session?.user.roleId;
+    const userName = session?.user.name;
+    const loggedInroleSlug = session?.user.roleSlug;
 
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
@@ -24,7 +37,7 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 <CreateUser />
             </div>
             <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-                <Table query={query} currentPage={currentPage} />
+                <Table query={query} currentPage={currentPage} roleSlug={loggedInroleSlug} userId={agentId} />
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages} />

@@ -12,18 +12,6 @@ export const authConfig = {
             const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
             // const isOnAdmin = nextUrl.pathname.startsWith('/admin'); //newly added
 
-            //newly   /dashboard/documents
-            // if (isOnAdmin) {
-            //     // ✅ Added: block non-admins from /admin
-            //     const permissions = auth?.user?.permissions ?? [];
-            //     return isLoggedIn && permissions.includes('manage:users');
-            // }
-
-            // if (isOnManageUser) {
-            //     const permissions = auth?.user?.permissions ?? [];
-
-            //     return isLoggedIn && permissions.includes('view:role');
-            // }
 
             if (isOnDashboard) {
                 if (isLoggedIn) return true;
@@ -35,11 +23,9 @@ export const authConfig = {
 
         },
 
-        // ✅ Added: save role & permissions into JWT newly added
+
         async jwt({ token, user }) {
             if (user) {
-                // token.id = user.id;
-                token.sub = user.id;
                 token.name = user.name;
                 token.roleId = user.roleId;
                 token.roleSlug = user.roleSlug;
@@ -48,14 +34,14 @@ export const authConfig = {
             }
             return token;
         },
-        // ✅ Added: expose to session (client-side) //newly added
+
         async session({ session, token }) {
             session.user.id = token.sub as string;
             session.user.name = token.name;
-            session.user.roleId = token.roleId;
-            session.user.roleSlug = token.roleSlug;
-            session.user.roleName = token.roleName;
-            session.user.permissions = token.permissions;
+            session.user.roleId = token.roleId as number;
+            session.user.roleSlug = token.roleSlug as string;
+            session.user.roleName = token.roleName as string;
+            session.user.permissions = token.permissions as string[];
             return session;
         },
 

@@ -1,6 +1,7 @@
 import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon, ArrowDownRightIcon, CheckCircleIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { acceptSubmissionAdminOrManager, rejectSubmissionAdminOrManager } from '@/app/lib/actions';
+// import ApproveDialog from './approve-dialog';
 
 export function CreateCustomer() {
   return (
@@ -54,28 +55,18 @@ export function UploadDocumentsWithSessionId({ id, submission }: { id: string, s
   );
 }
 
-// export function DisableCustomer({ id, is_enabled }: { id: string, is_enabled: boolean }) {
-//   const toggleCustomerStatus = disableCustomer.bind(null, id, !is_enabled);
-//   return (
-//     <form action={toggleCustomerStatus}>
-//       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-//         <span className="sr-only">Enabled</span>
-//         {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />}
-//         {/* <TrashIcon className="w-5" /> */}
 
-//       </button>
-//     </form>
-//   );
-// }
 
 
 export function AcceptSumbission({ submissionId }: { submissionId: string }) {
   const toggleCustomerStatus = acceptSubmissionAdminOrManager.bind(null, submissionId);
   return (
+
     <form action={toggleCustomerStatus}>
+
       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Enabled</span>
-        {/* {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />} */}
+
         <CheckIcon className="w-5" />
 
       </button>

@@ -6,10 +6,13 @@ export default function AcmeLogo() {
     <div
       className={`${lusitana.className} flex flex-row items-center leading-none text-white`}
     >
-      <GlobeAltIcon className="h-12 w-12 rotate-[15deg]" />
-      <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[44px]">KML HOLDINGS (PVT)LTD</p>
+      {/* <GlobeAltIcon className="h-12 w-12 rotate-[15deg]" /> */}
+      <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-[36px]">KML HOLDINGS</p>
     </div>
   );
 }
 //text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[44px]
 // original code    text-[44px]
+
+// text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[44px]
+// 

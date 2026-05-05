@@ -13,7 +13,7 @@ import { GetObjectCommand, CopyObjectCommand, DeleteObjectCommand, S3Client } fr
 import { hash } from 'bcrypt';
 import { sql } from './db';
 import { auth } from '@/auth';
-
+import { moveToFinal } from './r2-helpers';
 
 
 const saltRounds = 10;// for creating hash password
@@ -44,7 +44,7 @@ const DocumentSchema = z.object({
 const BranchSchema = z.object({
     id: z.string(),
     branch: z.string({ invalid_type_error: 'Please enter branch name' }).min(1, 'branch name cannot be empty'),
-    com_id: z.coerce
+    company: z.coerce
         .number()
         .gt(0, { message: 'Company ID is empty!' }),
 
@@ -54,19 +54,26 @@ const BranchSchema = z.object({
 const FileInfoSchema = z.object({
     name: z.string(),
     key: z.string(),
-    // url: z.string().url(),
+
 });
 const CustomerSchema = z.object({
     id: z.string(),
     name: z.string({ invalid_type_error: 'Please enter name' }).min(1, 'Customer name cannot be empty')
         .regex(/^[A-Za-z\s]+$/, 'Name must contain only letters and spaces'),
+    branch_id: z.coerce
+        .number()
+        .gt(0, { message: 'Branch ID is empty!' }),
+
 
 });
+
 const CustomerUpdateSchema = z.object({
     id: z.string(),
     name: z.string({ invalid_type_error: 'Please enter name' }).min(1, 'Customer name cannot be empty')
         .regex(/^[A-Za-z\s]+$/, 'Name must contain only letters and spaces'),
-
+    branch_id: z.coerce
+        .number()
+        .gt(0, { message: 'Branch ID is empty!' }),
 
 });
 
@@ -76,7 +83,8 @@ const UserSchema = z.object({
     name: z.string({ invalid_type_error: 'Please enter name' }).min(1, 'User name cannot be empty')
         .regex(/^[A-Za-z\s]+$/, 'Name must contain only letters and spaces'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
-    username: z.string(),
+    username: z.string().min(6, "Username must be at least 6 characters").max(20, "Username must be at most 10 characters")
+        .regex(/^[A-Za-z0-9_@]+$/, "Only letters, numbers, underscores, and @ are allowed"),
 
 });
 
@@ -99,8 +107,6 @@ const UpdateUserSchema = z.object({
     }
 );
 
-
-
 const RoleSchema = z.object({
     id: z.string(),
     role: z.string({ invalid_type_error: 'Please enter role name' }).min(1, 'Role name cannot be empty'),
@@ -109,17 +115,12 @@ const RoleSchema = z.object({
 });
 
 
-
-
 // Schema for the hidden input
 const subMissionUpdateScheme = z.object({
     submissionId: z.coerce
         .number()
         .gt(0, { message: 'Submission ID is empty or invalid!' }),
 });
-
-
-
 
 const noteUpdateScheme = z.object({
     submissionId: z.coerce
@@ -169,7 +170,7 @@ export type DocumentState = {
 export type BranchState = {
     errors?: {
         branch?: string[];
-        com_id?: string[];
+        company?: string[];
     };
     message?: string | null;
 }
@@ -188,6 +189,7 @@ export type CustomerSuccessResponse = {
 export type CustomerState = {
     errors?: {
         name?: string[];
+        branch_id?: string[];
     };
     message?: string | null;
 }
@@ -379,14 +381,11 @@ export async function updateDocument(id: string, prevState: DocumentState, formD
 
 export async function createCustomer(prevState: CustomerState | undefined, formData: FormData) {
 
-
     const session = await auth();
     if (!session?.user?.id) {
         throw new Error('Unauthorized');
     }
     const agentId = session.user.id;
-
-
 
     const date = new Date();
     const year = date.getFullYear();
@@ -394,14 +393,12 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
     const day = String(date.getDate()).padStart(2, '0');
     const localDate = `${year}-${month}-${day}`;
 
-
-
     let id: string;
 
     const validatedFields = CreateCustomer.safeParse({
         name: formData.get('name'),
+        branch_id: formData.get('branch_id'),
     });
-
 
     if (!validatedFields.success) {
         return {
@@ -412,22 +409,14 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
 
     }
 
-    const { name } = validatedFields.data;
+    const { name, branch_id } = validatedFields.data;
     const email = String(formData.get('email') ?? '');
-    const img_url = "/customers/evil-rabbit.png";
+    const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');
     const locationLink = String(formData.get('googleLink') ?? '0');
+    const customer_code = String(formData.get('cust_code') ?? '');
 
 
-    // const result = await sql`
-    //         INSERT INTO customers (name, email, image_url, mobile, loc_link)
-    //         VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink})
-    //         RETURNING id;
-    //     `;
-
-    // id = result[0].id;
-
-    // redirect(`/dashboard/customers/${id}/upload`);//dynamic redirection. no need revalidate
     let customerId: string;
     let submissionId: string;
 
@@ -435,24 +424,13 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
         const result = await sql.begin(async (txn) => {
             // 1. Insert customer
             const [customer] = await txn`
-                INSERT INTO customers (name, email, image_url, mobile, loc_link)
-                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink})
+            
+                INSERT INTO customers (name, email, image_url, mobile, loc_link,cust_code,branch_id)
+                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink},${customer_code},${branch_id})
                 RETURNING id
             `;
 
 
-
-            //         const result = await sql`
-            //   INSERT INTO submission (agent_id, customer_id, status,created_at) 
-            //   VALUES (${agentId},${customerId}, ${status},${localDate}) 
-            //   RETURNING id
-            // `;
-            //         const submissionId = result[0]?.id;
-
-
-
-
-            // 2. Create submission — if this fails, customer insert is rolled back too
             const [submission] = await txn`
                 INSERT INTO submission (agent_id, customer_id, status,created_at)
                 VALUES (${agentId},${customer.id}, 'draft', ${localDate})
@@ -470,20 +448,18 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
         return { error: 'Failed to create customer' };
     }
 
-    // Redirect outside try/catch — Next.js redirect throws internally
+
     redirect(`/dashboard/customers/${customerId}/upload?submissionId=${submissionId}&mode=create`);
-
-
-
-
 }
+
+
 export async function updateCustomer(id: string, submisnId: string | undefined, prevState: CustomerState | undefined, formData: FormData) {
     const validatedFields = UpdateCustomer.safeParse({
         name: formData.get('name'),
-        // username: formData.get('username'),
-        // password: formData.get("password") || "",
+        branch_id: formData.get('branch_id'),
+
     });
-    console.log("update cu id" + id);
+
     if (!validatedFields.success) {
         console.log("update cu not succ");
         return {
@@ -493,41 +469,29 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
     }
 
 
-    const { name } = validatedFields.data;
+    const { name, branch_id } = validatedFields.data;
     const email = String(formData.get('email') ?? '');
-    const img_url = "/customers/evil-rabbit.png";
+    const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');
     const locationLink = String(formData.get('googleLink') ?? '0');
+    const customer_code = String(formData.get('cust_code') ?? '');
 
 
-    console.log("update cu name" + name);
 
-    // try {
     await sql`
         UPDATE customers
-	SET  name=${name}, email=${email}, image_url=${img_url}, mobile=${mobile}, loc_link=${locationLink}
+	SET  name=${name}, email=${email}, image_url=${img_url}, mobile=${mobile}, loc_link=${locationLink},
+    cust_code=${customer_code}, branch_id=${branch_id}
 	
 	WHERE id = ${id}   
   `;
-    // } catch (error) {
 
-    //     console.error(error);
-    //     // return {
-    //     message: 'Database Error: Failed to Create Invoice.',
-    // };
-    // }
-    // revalidatePath('/dashboard/users');
-    // redirect('/dashboard/users');
-    // After successful update:
     if (submisnId) {
-        // redirect(`/dashboard/customers/${id}/upload/${submisnId}`);
+
         redirect(`/dashboard/customers/${id}/upload?submissionId=${submisnId}&name=${encodeURIComponent(name)}&mode=edit`);
     }
 
-    // else {
-    //     redirect(`/dashboard/customers/${id}/upload`);
-    // }
-    // redirect(`/dashboard/customers/${id}/upload`);
+
 
 }
 export async function updateSubmissionStatus(
@@ -558,185 +522,18 @@ export async function updateSubmissionStatus(
         UPDATE submission
 	SET status='pending_admin' WHERE id = ${numericSubmissionId};  
 `;
-    // return {
-    //     status: 'success',
-    //     message: `Submission ${numericSubmissionId} status updated to pending_admin`,
-    //     submissionId: numericSubmissionId, // optional, for frontend use
-    // };
-    // } catch (error) {
 
-    //     // console.error(error);
-    //     // return {
-    //     //     status: 'error',
-    //     //     message: 'Database error: Failed to update submission status',
-    //     //     errors: {},
-    //     // };
-    //     // return { message: 'Database Error: Failed to Update Invoice.' };
-    // }
-    // redirect(`/dashboard/customers`);
-    // redirect('/dashboard/documents');
     revalidatePath('/dashboard/customers');
     redirect('/dashboard/customers');
 }
 
-// export async function createCustomer(prevState: CustomerState | undefined, formData: FormData) {
-//     const state = prevState ?? { message: null, errors: {} };
-//     let lastInsertedRowId: string | null = null;
-//     const validatedFields = CreateCustomer.safeParse({
-//         name: formData.get('name'),
 
-//         // mobile: formData.get('mobile'),
-//         // lat: formData.get('lat'),
-//         // lan: formData.get('lan'),
 
-//     });
-
-//     if (!validatedFields.success) {
-//         return {
-//             errors: validatedFields.error.flatten().fieldErrors,
-//             values: {
-//                 name: formData.get('name'),
-
-//             },
-//             message: 'Missing Fields. Failed to Create Customer',
-//             // errors: validatedFields.error.flatten().fieldErrors,
-//             // message: 'Missing Fields. Failed to Create Customer',
-//         };
-//     }
-
-//     //  const { name, mobile, lat, lan } = validatedFields.data;
-//     const { name } = validatedFields.data;
-//     const email = String(formData.get('email') ?? '');
-//     const img_url = "/customers/evil-rabbit.png";
-//     const mobile = String(formData.get('mobile') ?? '0');
-//     const locationLink = String(formData.get('googleLink') ?? '0');
-
-//     try {
-
-//         const result = await sql`
-//     INSERT INTO customers (name, email, image_url, mobile,loc_link)
-//     VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink})
-//     RETURNING id;
-//   `;
-//         lastInsertedRowId = result[0].id;     
-
-//     } catch (error) {
-//         console.error(error);
-
-//     }
-
-//     redirect(`/dashboard/customers/create?id=${lastInsertedRowId}`);
+// export async function createCustomerDocument(prevState: CustomerState, formData: FormData) {
 
 // }
 
-export async function createCustomerDocument(prevState: CustomerState, formData: FormData) {
-    // const raw = formData.get('uploadedFilesByDocument') as string;
 
-    // if (!raw) {
-    //     throw new Error("Missing uploadedFilesByDocument");
-    // }
-
-    // // const uploadedFilesByDocument = JSON.parse(raw || "{}");
-    // let uploadedFilesByDocumentValidated;
-    // try {
-    //     uploadedFilesByDocumentValidated = JSON.parse(raw || "{}");
-    // } catch {
-    //     throw new Error("uploadedFilesByDocument must be valid JSON");
-
-    // }
-
-
-    // const keptFilesMapping = JSON.parse(formData.get('keptFilesMapping') as string);
-    // const deletedFilesMapping = JSON.parse(formData.get('deletedFilesMapping') as string);
-
-    // const validatedFields = CreateCustomer.safeParse({
-    //     // name: formData.get('name'),
-    //     uploadedFilesByDocument: uploadedFilesByDocumentValidated,
-    //     // mobile: formData.get('mobile'),
-    //     // lat: formData.get('lat'),
-    //     // lan: formData.get('lan'),
-
-    // });
-
-    // if (!validatedFields.success) {
-
-    //     return {
-    //         errors: validatedFields.error.flatten().fieldErrors,
-    //         values: {
-    //             // name: formData.get('name'),
-    //             uploadedFilesByDocument: uploadedFilesByDocumentValidated,
-    //         },
-    //         message: 'Missing Fields. Failed to Create Customer',
-    //         // errors: validatedFields.error.flatten().fieldErrors,
-    //         // message: 'Missing Fields. Failed to Create Customer',
-    //     };
-    // }
-
-    // const { uploadedFilesByDocument } = validatedFields.data;
-
-
-    //  // 2. Insert all kept file records with final keys (documents/...)
-    //     for (const mapping of keptFilesMapping) {
-    //         const { documentId, keys } = mapping;
-    //         for (const tempKey of keys) {
-    //             // Generate final key by replacing prefix
-    //             const finalKey = tempKey.replace(/^temp\//, 'documents/');
-
-    //             // Extract original file name from the temp key
-    //             // Assumes key format: temp/{documentId}/{uuid}-{fileName}
-    //             const fileName = tempKey.split('/').pop()?.replace(/^[a-f0-9-]+-/, '') || 'unknown';
-
-    //             await txn`
-    //     INSERT INTO customer_details (document_id, master_id, file_key, file_name)
-    //     VALUES (${documentId}, ${lastInsertedRowId}, ${finalKey}, ${fileName})
-    //   `;
-    //         }
-    //     }
-
-
-    //      try {
-    //     for (const mapping of keptFilesMapping) {
-    //         const { keys } = mapping;
-    //         for (const tempKey of keys) {
-    //             const finalKey = tempKey.replace(/^temp\//, 'documents/');
-    //             await r2.send(new CopyObjectCommand({
-    //                 Bucket: process.env.R2_BUCKET,
-    //                 CopySource: `${process.env.R2_BUCKET}/${tempKey}`,
-    //                 Key: finalKey,
-    //             }));
-    //             await r2.send(new DeleteObjectCommand({
-    //                 Bucket: process.env.R2_BUCKET,
-    //                 Key: tempKey,
-    //             }));
-    //         }
-    //     }
-
-    //     // 4. Delete queued files (user‑deleted temp keys)
-    //     for (const mapping of deletedFilesMapping) {
-    //         const { keys } = mapping;
-    //         for (const key of keys) {
-    //             await r2.send(new DeleteObjectCommand({
-    //                 Bucket: process.env.R2_BUCKET,
-    //                 Key: key,
-    //             }));
-    //         }
-    //     }
-    // } catch (error) {
-    //     console.error('R2 operation failed:', error);
-    //     // Log error, but the database already has the final keys.
-    //     // You can run a separate cleanup job to move leftover temp files later.
-    // }
-}
-
-// export async function disableCustomer(id: string, isEnabled: boolean) {
-//     const numericId = Number(id);
-//     await sql`UPDATE customers
-//   SET is_enabled = ${isEnabled}
-//   WHERE id = ${numericId}`;
-//     // revalidatePath('/dashboard/invoices');
-//     revalidatePath('/dashboard/documents');
-//     // redirect('/dashboard/documents');
-// }
 export async function updateManagerAndAdminNotes(summissionId: number, prevState: NotesFormState | undefined, formData: FormData): Promise<NotesFormState> {
 
     const session = await auth();
@@ -823,13 +620,13 @@ export async function createUser(prevState: UserState, formData: FormData) {
 }
 
 export async function disableUser(id: string, isEnabled: boolean) {
-    // const numericId = Number(id);
+
     await sql`UPDATE users
   SET is_enabled = ${isEnabled}
   WHERE id = ${id}`;
-    // revalidatePath('/dashboard/invoices');
+
     revalidatePath('/dashboard/users');
-    // redirect('/dashboard/documents');
+
 }
 
 export async function updateUser(id: string, prevState: UserUpdateState, formData: FormData) {
@@ -1000,7 +797,7 @@ export async function authenticate(
 
 // }
 
-//from admin/users/actions
+
 async function guardAdmin() {
     const session = await auth();
     if (!session?.user?.permissions?.includes('manage:users')) {
@@ -1165,7 +962,7 @@ export async function createBranch(prevState: BranchState, formData: FormData) {
 
     const validatedFields = CreateBranch.safeParse({
         branch: formData.get('branch'),
-        com_id: formData.get('com_id')
+        company: formData.get('company')
     });
 
 
@@ -1176,13 +973,13 @@ export async function createBranch(prevState: BranchState, formData: FormData) {
         };
     }
 
-    const { branch, com_id } = validatedFields.data;
+    const { branch, company } = validatedFields.data;
 
     try {
 
         await sql`
     INSERT INTO branches(branch,com_id)
-	VALUES (${branch},${com_id});
+	VALUES (${branch},${company});
   `;
     } catch (error) {
 
@@ -1197,13 +994,13 @@ export async function createBranch(prevState: BranchState, formData: FormData) {
 }
 
 export async function disableBranch(id: string, is_valid: boolean) {
-    // const numericId = Number(id);
+
     await sql`UPDATE branches
   SET is_valid = ${is_valid}
   WHERE id = ${id}`;
-    // revalidatePath('/dashboard/invoices');
+
     revalidatePath('/dashboard/branches');
-    // redirect('/dashboard/documents');
+
 }
 
 
@@ -1223,6 +1020,7 @@ export async function acceptSubmissionAdminOrManager(summissionId: string) {
             WHERE id = ${summissionId}
         `;
     } else if (roleSlug === "manager" && summissionId !== undefined) {
+        await moveToFinal(summissionId);//sending files to final folder
         await sql`
             UPDATE submission 
             SET status = 'approved'

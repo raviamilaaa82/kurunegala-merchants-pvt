@@ -40,7 +40,7 @@ export default async function UsersClientTable({
 }: {
 
   roles: Role[];
-  currentUserId: string;
+  currentUserId?: string;
   query: string;
   currentPage: number;
 }) {
@@ -73,33 +73,59 @@ export default async function UsersClientTable({
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden rounded-md bg-gray-50 p-2 md:pt-0">
-              {/* <div className="md:hidden">
-                {documents?.map((document) => (
-                  <div
-                    key={document.id}
-                    className="mb-2 w-full rounded-md bg-white p-4"
-                  >
-                    <div className="flex items-center justify-between border-b pb-4">
-                      <div>
-                        <div className="mb-2 flex items-center">
-                          <div className="flex items-center gap-3">
+              <div className="md:hidden">
+                {users?.map((user) => {
 
-                            <p>{document.document}</p>
+                  const isCurrentUser = user.id === currentUserId;
+
+                  return (
+                    <div
+                      key={user.id}
+                      className="mb-2 w-full rounded-md bg-white p-4"
+                    >
+                      <div className="flex items-center justify-between border-b pb-4">
+                        <div>
+                          <div className="mb-2 flex items-center">
+                            <div className="flex items-center gap-3">
+
+                              <p>{user.name}</p>
+                              {isCurrentUser && (
+                                <span className="ml-2 text-xs text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded">
+                                  you
+                                </span>
+                              )}
+                            </div>
                           </div>
+
                         </div>
-                        <p className="text-sm text-gray-500">
-                          {document.is_valid ? (
-                            <span className="text-green-600">✓ Valid</span>
-                          ) : (
-                            <span className="text-red-600">✗ Invalid</span>
-                          )}
-                        </p>
+                      </div>
+                      <div className="flex w-full items-center justify-between border-b py-5">
+                        <div className="flex w-1/2 flex-col">
+
+                          <p className="font-medium">{user.email}</p>
+                        </div>
+
+                      </div>
+                      <div className="flex w-full items-center justify-between border-b py-5">
+                        {/* <div className="flex w-1 flex-col"> */}
+
+                        {isCurrentUser ? (
+                          // Lock own role — cannot self-change
+                          <span className="text-gray-400 text-xs italic">
+                            {user.role_name} (locked)
+                          </span>
+                        ) : (
+
+                          <RoleFilter roles={roles} userId={user.id} roleId={user.role_id} />
+
+                        )}
+                        {/* </div> */}
+
                       </div>
                     </div>
-
-                  </div>
-                ))}
-              </div> */}
+                  )
+                })}
+              </div>
               <table className="hidden min-w-full rounded-md text-gray-900 md:table">
                 <thead className="rounded-md bg-gray-50 text-left text-sm font-normal">
                   <tr>

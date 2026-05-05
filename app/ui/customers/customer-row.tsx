@@ -14,7 +14,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 // import { UpdateCustomer, DisableCustomer, UploadDocuments } from './buttons';
-import { UpdateCustomer, DisableCustomer, UploadDocuments } from '@/app/ui/customers/buttons';
+import { UpdateCustomer, UploadDocuments } from '@/app/ui/customers/buttons';
 import { PencilIcon, PlusIcon, TrashIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
 
 

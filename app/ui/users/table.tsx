@@ -10,11 +10,15 @@ import { UpdateUsers, DisableUsers } from '@/app/ui/users/buttons';
 
 export default async function UserTable({
   query,
-  currentPage
-  ,
+  currentPage,
+  roleSlug,
+  userId
+
 }: {
   query: string,
-  currentPage: number
+  currentPage: number,
+  roleSlug?: string,
+  userId: string,
 
 }) {
 
@@ -131,9 +135,19 @@ export default async function UserTable({
                         )}
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
+
                         <div className="flex justify-end gap-3">
-                          <UpdateUsers id={user.id.toString()} />
-                          <DisableUsers id={user.id} is_enabled={user.is_enabled} />
+                          {
+
+                            userId === user?.id ? (<UpdateUsers id={user.id.toString()} />) : null
+
+                          }
+
+
+                          {roleSlug !== "agent" ? (
+                            <DisableUsers id={user.id} is_enabled={user.is_enabled} />
+                          ) : null
+                          }
                         </div>
                       </td>
                     </tr>

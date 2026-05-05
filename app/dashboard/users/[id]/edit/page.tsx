@@ -9,7 +9,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
     const [user] = await Promise.all([
         fetchUserById(id),
-        // fetchCustomers()
+
     ]);
     if (!user) {
         notFound();

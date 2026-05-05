@@ -1,17 +1,10 @@
 'use client';
-import { Branches, Company } from '@/app/lib/definitions';
+import { Company } from '@/app/lib/definitions';
 import Link from 'next/link';
-import {
-  CheckIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
+
 import { Button } from '@/app/ui/button';
 import { createBranch, BranchState } from '@/app/lib/actions';
 import { useActionState, useState } from 'react';
-
-
 
 
 export default function Form({ companies }: { companies: Company[] }) {
@@ -45,8 +38,8 @@ export default function Form({ companies }: { companies: Company[] }) {
           </label>
           <div className="relative">
             <select
-              id="company"
-              name="com_id"
+              id="com_id"
+              name="company"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               defaultValue=""
               aria-describedby="document-error"
@@ -99,8 +92,6 @@ export default function Form({ companies }: { companies: Company[] }) {
               ))}
           </div>
         </div>
-
-
 
 
       </div>

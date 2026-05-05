@@ -14,9 +14,9 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
 
     const session = await auth();
 
-    if (!session?.user?.permissions?.includes('manage:users')) {
-        redirect('/dashboard');
-    }
+    // if (!session?.user?.permissions?.includes('manage:users')) {
+    //     redirect('/dashboard');
+    // }
 
     // const [users, roles] = await Promise.all([
     //     fetchUsersWithRoles(),
@@ -29,7 +29,7 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
 
     const currentPage = Number(searchParams?.page) || 1;
     const totalPages = await fetchUsersWithRolesPages(query);
-    // const totalPages = await fetchUsersPages(query);
+
 
     return (
         <div className="w-full">
@@ -41,7 +41,7 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 {/* <CreateCustomer /> */}
             </div>
             <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-                <Table roles={roles} currentUserId={session.user.id} query={query} currentPage={currentPage} />
+                <Table roles={roles} currentUserId={session?.user.id} query={query} currentPage={currentPage} />
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages} />

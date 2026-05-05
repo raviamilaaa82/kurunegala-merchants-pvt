@@ -1,10 +1,9 @@
 import Form from '@/app/ui/customers/edit-form';
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchCustomerBySubmissionId } from '@/app/lib/data';
+import { fetchCustomerBySubmissionId, fetchdBranches } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
-import { CustTableTypeWithSubmission } from '@/app/lib/definitions';
 
-// props: { params: Promise<{ id: string }> }
+
 export default async function Page(props: {
     params: Promise<{ id: string }>;
     searchParams?: Promise<{ submissionId?: string }>;
@@ -15,18 +14,8 @@ export default async function Page(props: {
     const id = params.id;
     const submissionId = searchParams?.submissionId;
 
-
-    // customers, images, documents
-    // console.log(id);
-    // console.log("id");
-    // const [customers, documents] = await Promise.all([
-    //     fetchCustomerById(id),
-
-    //     fetchDocuments(),
-    // ]);
-
-
     const customer = await fetchCustomerBySubmissionId(submissionId ?? null);
+    const branches = await fetchdBranches();
 
     if (!customer) {
         notFound();
@@ -44,8 +33,8 @@ export default async function Page(props: {
                     },
                 ]}
             />
-            {/* images={images} */}
-            <Form customer={customer} submisnId={submissionId} />
+
+            <Form customer={customer} submisnId={submissionId} branches={branches} />
         </main>
     );
 }

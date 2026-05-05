@@ -4,36 +4,23 @@ import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
-import postgres from 'postgres';
+
 import { sql } from './app/lib/db';
 
-// const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-// const sql = postgres(process.env.POSTGRES_URL!, { ssl: false });
 
-
-// async function getUser(email: string): Promise<User | undefined> {
-//     try {
-//         const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
-//         return user[0];
-//     } catch (error) {
-//         console.error('Failed to fetch user:', error);
-//         throw new Error('Failed to fetch user.');
-//     }
-// }
 
 export const { auth, signIn, signOut } = NextAuth({
     ...authConfig,
     providers: [
         Credentials({
             async authorize(credentials) {
-
-                // console.log("1. authorize called with email:", credentials?.email);
-
-                const parsedCredentials = z.object({ email: z.string().email(), password: z.string().min(6) })
+                // const parsedCredentials = z.object({ email: z.string().email(), password: z.string().min(6) })
+                //     .safeParse(credentials);
+                const parsedCredentials = z.object({ user_name: z.string(), password: z.string().min(6) })
                     .safeParse(credentials);
 
                 if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
+                    const { user_name, password } = parsedCredentials.data;
                     //newly added code
                     const result = await sql`
                         SELECT
@@ -48,35 +35,27 @@ export const { auth, signIn, signOut } = NextAuth({
                         FROM users u
                         JOIN roles r ON r.id = u.role_id
                         LEFT JOIN role_permissions rp ON rp.role_id = r.id
-                        WHERE u.email = ${email}
+                        WHERE u.user_name = ${user_name} AND u.is_enabled='true'
                         GROUP BY u.id, r.id
                         `;
 
-                    // console.log('1. result:', result);          // check query result
-
                     const user = result[0];
-                    // console.log('2. user:', user);              // check user found
-                    // console.log('3. password input:', password); // check password coming in
-                    // console.log('4. password in db:', user?.password);
+
                     if (!user) return null;
 
-                    // if (!user) {
-                    //     console.log('❌ No user found');
-                    //     return null;
-                    // }
-                    //newly added code below is commented because same thing right above this line
-                    // const user = await getUser(email);
-                    // if (!user) return null;
                     const passwordsMatch = await bcrypt.compare(password, user.password);
 
-                    // console.log('5. passwordsMatch:', passwordsMatch);
                     if (!passwordsMatch) return null;//this is new code (same thing )
-                    // if (!passwordsMatch) {
-                    //     console.log('❌ Password mismatch');
-                    //     return null;
-                    // }
-                    // if (passwordsMatch) return user; //this is existing code
-                    //newly added code from here to 
+
+
+                    try {
+                        await sql`
+                            INSERT INTO user_activity (user_id, user_name, action, page)
+                            VALUES (${user.id}, ${user.name ?? ''}, 'login', NULL)
+                        `;
+                    } catch (err) {
+                        console.error('Failed to log login activity:', err);
+                    }
                     return {
                         id: user.id,
                         email: user.email,
@@ -90,9 +69,6 @@ export const { auth, signIn, signOut } = NextAuth({
                 }
                 // console.log('Invalid credentials');
                 return null;
-
-
-
             }
         })],
 });

@@ -45,6 +45,7 @@ const ALL_PERMISSIONS = [
 
     'manage:permissions',
     'manage:branch',
+    'manage:history',
 ];
 type Role = {
     id: number;

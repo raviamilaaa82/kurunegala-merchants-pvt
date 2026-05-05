@@ -21,16 +21,7 @@ export default function CaptureLocationButton({ onLocationCaptured }: Props) {
             // Assuming lat and lan (longitude) are available from your form or database
             const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
             onLocationCaptured(googleMapsLink);
-            // console.log("lat" + lat);
-            // console.log("lng" + lng);
-            // Save to DB
-            // await fetch("/api/save-location", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify({ customerId, lat, lng }),
-            // });
 
-            // setSaved(true);
         } catch (err) {
             alert("Could not get location. Please allow location access.");
         }
