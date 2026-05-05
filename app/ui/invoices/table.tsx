@@ -37,12 +37,12 @@ export default async function InvoicesTable({
                     </div>
                     <p className="text-sm text-gray-500">{invoice.email}</p>
                   </div>
-                  <InvoiceStatus status={invoice.status} />
+                  {/* <InvoiceStatus status={invoice.status} /> */}
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
                   <div>
                     <p className="text-xl font-medium">
-                      {formatCurrency(invoice.amount)}
+                      {/* {formatCurrency(invoice.amount)} */}
                     </p>
                     <p>{formatDateToLocal(invoice.date)}</p>
                   </div>
@@ -99,13 +99,13 @@ export default async function InvoicesTable({
                     {invoice.email}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {formatCurrency(invoice.amount)}
+                    {/* {formatCurrency(invoice.amount)} */}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {formatDateToLocal(invoice.date)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    <InvoiceStatus status={invoice.status} />
+                    {/* <InvoiceStatus status={invoice.status} /> */}
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">

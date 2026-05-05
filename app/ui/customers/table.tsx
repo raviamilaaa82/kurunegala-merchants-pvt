@@ -6,7 +6,7 @@ import {
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
 import { fetchFilteredCustomers } from '@/app/lib/data';
-import { UpdateCustomer, DisableCustomer, UploadDocuments } from './buttons';
+import { UpdateCustomer, UploadDocuments } from './buttons';
 // import StatusTabs from './status-tabs';
 
 

@@ -281,7 +281,7 @@ export default function Form({ customer, submisnId, branches }: { customer: any,
                         <label htmlFor="log" className="mb-2 block text-sm font-medium">
                             Profile Image
                         </label>
-                        <ProfileImageUploader userId="user_123"
+                        <ProfileImageUploader
                             currentImageUrl={profileImgUrl} // optional
                             onUploadSuccess={(url) => setProfileImgUrl(url)} />
                         <input type="hidden" name="profileImgeUrl" value={profileImgUrl} />
