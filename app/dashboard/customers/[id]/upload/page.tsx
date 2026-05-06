@@ -6,6 +6,8 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { r2 } from "@/lib/r2";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export default async function Page({
     params,
@@ -14,6 +16,20 @@ export default async function Page({
     params: Promise<{ id: string }>;
     searchParams?: Promise<{ submissionId?: string; name?: string; mode?: string }>;
 }) {
+
+    const session = await auth();
+
+    if (!session?.user?.id) {
+        redirect("/login");  // ✅ use redirect, not NextResponse
+    }
+
+    const agentId = session?.user.id;
+    const agentRoleId = session?.user.roleId;
+    const userName = session?.user.name;
+    const loggedInroleSlug = session?.user.roleSlug;
+
+
+
     const { id } = await params;           // ✅ await
     const sp = await searchParams;         // ✅ await
 
@@ -83,7 +99,7 @@ export default async function Page({
             />
 
             <Form documents={documents} customerId={id} subminId={submissionId}
-                name={decodeURIComponent(name)} existingImages={mode === 'edit' ? existingImages : []} />
+                name={decodeURIComponent(name)} existingImages={mode === 'edit' ? existingImages : []} roleSlug={loggedInroleSlug} />
         </main>
     );
 }

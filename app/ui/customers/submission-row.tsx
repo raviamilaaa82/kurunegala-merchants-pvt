@@ -7,16 +7,16 @@ import {
     AccordionTrigger,
     AccordionContent,
 } from "@/components/ui/accordion";
-import {
-    Dialog,
-    DialogContent,
-    DialogTrigger,
-    DialogTitle,
-} from "@/components/ui/dialog";
+// import {
+//     Dialog,
+//     DialogContent,
+//     DialogTrigger,
+//     DialogTitle,
+// } from "@/components/ui/dialog";
 // import { UpdateCustomer, DisableCustomer, UploadDocuments, UploadDocumentsWithSessionId } from './buttons';
 import { UpdateCustomer, AcceptSumbission, RejectSumbission } from '@/app/ui/customers/buttons';
 import ApproveDialog from "./approve-dialog";
-import { PencilIcon, PlusIcon, TrashIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon, ViewColumnsIcon, ArrowDownTrayIcon, ArrowDownIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { updateManagerAndAdminNotes, NotesFormState } from "@/app/lib/actions";
 
 import Lightbox, { CloseIcon } from "yet-another-react-lightbox";
@@ -460,7 +460,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                 className="rounded-md border p-2 hover:bg-gray-100"
                 onClick={() => setOpen(open ? "" : "item-1")}
             >
-                <ViewColumnsIcon className="w-5" />
+                <ChevronDownIcon className="w-5" />
             </button>
             {/* {(submission.status =='draft') ?? (<UpdateCustomer id={submission.customer_id} submissionId={submission.submission_id} />)} */}
             {
@@ -484,6 +484,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                         <UpdateCustomer
                             id={submission.customer_id}
                             submissionId={submission.submission_id}
+
                         />
                     ) : null;
                 })()
@@ -491,11 +492,17 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
             }
 
 
-            {
+            {/* {
                 submission.status !== 'approved' && (loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager") ? (
                     <AcceptSumbission submissionId={submission.submission_id} />
                 ) : null
 
+            } */}
+            {
+                ((loggedInRoleSlug === "manager" && submission.status !== 'approved' && submission.status !== 'manager_rejected') ||
+                    (loggedInRoleSlug === "admin" && submission.status !== 'pending_manager')) && (
+                    <AcceptSumbission submissionId={submission.submission_id} />
+                )
             }
 
 
@@ -505,12 +512,25 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
 
             } */}
 
+
             {
-                submission.status !== 'approved' && (loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager") ? (
+                ((loggedInRoleSlug === "manager" &&
+                    submission.status !== 'approved' &&
+                    submission.status !== 'manager_rejected') ||
+                    (loggedInRoleSlug === "admin" &&
+                        submission.status !== 'pending_manager' &&
+                        submission.status !== 'manager_rejected' &&
+                        submission.status !== 'admin_rejected')) && (
+                    <RejectSumbission submissionId={submission.submission_id} />
+                )
+            }
+
+            {/* {
+                submission.status !== 'approved' && submission.status !== 'pending_manager' && (loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager") ? (
                     <RejectSumbission submissionId={submission.submission_id} />
                 ) : null
 
-            }
+            } */}
 
             {/* {
             loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager" ?
@@ -697,7 +717,9 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
 
                 <td className={`bg-white px-4 py-5 ${submission.status === 'admin_rejected' || submission.status === 'manager_rejected'
                     ? 'text-red-500'
-                    : ''
+                    : submission.status === 'approved'
+                        ? 'text-green-500'
+                        : ''
                     }`}>
 
                     {submission.status}

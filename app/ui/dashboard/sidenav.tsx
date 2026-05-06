@@ -10,6 +10,7 @@ import {
   DocumentDuplicateIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 const links = [
   { name: 'Home', href: '/dashboard', permission: null },
@@ -56,9 +57,49 @@ export default async function SideNav() {
         </div>
       </Link>
       <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
-        <NavLinks links={visibleLinks} />
-        <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
-        <form action={async () => {
+
+        <div className="w-full">
+          <div className="md:hidden overflow-x-auto pb-2">
+            {/* Mobile: horizontal scroll */}
+            <div className="flex flex-nowrap space-x-2 min-w-max">
+              <NavLinks links={visibleLinks} />
+              <form action={async () => {
+                'use server';
+                await signOut({ redirectTo: '/' });
+              }}>
+                <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
+                  <PowerIcon className="w-6" />
+                  <div className="hidden md:block">Sign Out</div>
+                </button>
+              </form>
+            </div>
+          </div>
+          <div className="hidden md:block">
+            {/* Desktop: vertical scroll inside ScrollArea */}
+            <ScrollArea className="h-[500px] w-full rounded-md border p-4">
+              <NavLinks links={visibleLinks} />
+
+              <form action={async () => {
+                'use server';
+                await signOut({ redirectTo: '/' });
+              }}>
+                <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
+                  <PowerIcon className="w-6" />
+                  <div className="hidden md:block">Sign Out</div>
+                </button>
+              </form>
+              <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
+            </ScrollArea>
+
+          </div>
+        </div>
+        {/* <ScrollArea className="h-[300px] w-full rounded-md">
+
+
+          <NavLinks links={visibleLinks} />
+        </ScrollArea> */}
+        {/* <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div> */}
+        {/* <form action={async () => {
           'use server';
           await signOut({ redirectTo: '/' });
         }}>
@@ -66,7 +107,7 @@ export default async function SideNav() {
             <PowerIcon className="w-6" />
             <div className="hidden md:block">Sign Out</div>
           </button>
-        </form>
+        </form> */}
       </div>
     </div>
   );

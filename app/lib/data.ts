@@ -405,7 +405,7 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
         rejected: ['admin_rejected', 'manager_rejected'],
       };
       statusFilter = status === ''
-        ? ['draft', 'pending_admin', 'admin_rejected', 'manager_rejected']
+        ? ['draft', 'pending_admin', 'admin_rejected', 'manager_rejected', 'pending_manager']
         : (map[status] ?? []);
 
     } else if (role_slug === 'manager') {

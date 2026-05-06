@@ -12,15 +12,26 @@ export function ImageWithModal({ imageUrl, altText }: { imageUrl: string, altTex
 
 
     return (
+
         <>
-            <Image
+            {imageUrl ? (
+                <Image
+                    src={imageUrl}
+                    width={28}
+                    height={28}
+                    alt={altText}
+                    className="rounded-full cursor-pointer"
+                    onClick={() => setIsOpen(true)}
+                />
+            ) : null}
+            {/* <Image
                 src={imageUrl}
                 width={28}
                 height={28}
                 alt={altText}
                 className="rounded-full cursor-pointer"
                 onClick={() => setIsOpen(true)}
-            />
+            /> */}
 
             {isOpen && (
                 <div

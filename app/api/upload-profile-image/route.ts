@@ -22,9 +22,13 @@ export async function POST(req: NextRequest) {
         if (file.size > MAX_SIZE)
             return NextResponse.json({ error: "File too large. Max 5MB." }, { status: 400 });
 
-        const uniqueId = randomUUID(); //creating uniqueid for image
+        function shortUUID() {
+            return Buffer.from(randomUUID()).toString("base64").replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toLowerCase();
+        }
+        const uniqueId = shortUUID(); //creating uniqueid for image
         const ext = file.name.split(".").pop() ?? "jpg";
-        const filename = `${uniqueId}-${Date.now()}.${ext}`;
+        //const filename = `${uniqueId}-${Date.now()}.${ext}`;
+        const filename = `${uniqueId}.${ext}`;
 
         await mkdir(UPLOAD_DIR, { recursive: true });
         await writeFile(path.join(UPLOAD_DIR, filename), Buffer.from(await file.arrayBuffer()));

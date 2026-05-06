@@ -6,13 +6,14 @@ import { notFound } from 'next/navigation';
 
 export default async function Page(props: {
     params: Promise<{ id: string }>;
-    searchParams?: Promise<{ submissionId?: string }>;
+    searchParams?: Promise<{ submissionId?: string, roleSlug: string }>;
 }) {
     const params = await props.params;
     const searchParams = await props.searchParams;//new params submissionId
 
     const id = params.id;
     const submissionId = searchParams?.submissionId;
+    const roleSlug = searchParams?.roleSlug;
 
     const customer = await fetchCustomerBySubmissionId(submissionId ?? null);
     const branches = await fetchdBranches();

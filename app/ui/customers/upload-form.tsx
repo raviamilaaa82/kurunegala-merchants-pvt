@@ -22,7 +22,7 @@ type CustomerErrors = {
 
 const initialStateStatusUpdate: SubmissionState = { message: null, errors: {} };
 
-export default function UploadForm({ documents, customerId, subminId, name, existingImages = [] }: { documents: Documents[], customerId: string, subminId?: string, name: string, existingImages?: any[] }) {
+export default function UploadForm({ documents, customerId, subminId, name, existingImages = [], roleSlug }: { documents: Documents[], customerId: string, subminId?: string, name: string, existingImages?: any[], roleSlug?: string }) {
     const [updateState, formUpdateAction] = useActionState(
         updateSubmissionStatus,
         initialStateStatusUpdate
@@ -396,7 +396,7 @@ export default function UploadForm({ documents, customerId, subminId, name, exis
                     <Button type="submit"
                         className="bg-blue-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
                         disabled={isSubmitButtonDisabled}
-                    >Submit for Approval </Button>
+                    >{roleSlug === 'manager' ? 'Approve' : 'Submit for Approval'} </Button>
                 </div>
                 <div onContextMenu={(e) => e.preventDefault()}>
                     <Lightbox

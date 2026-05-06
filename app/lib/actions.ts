@@ -499,6 +499,11 @@ export async function updateSubmissionStatus(
     formData: FormData
 ) {
 
+    const session = await auth();
+    if (!session?.user?.id) redirect("/login");
+
+    const roleSlug = session.user.roleSlug;
+
     const submissionIdRaw = formData.get('submissionId');
 
     // 2. Validate using Zod (coerces string to number)
@@ -515,13 +520,43 @@ export async function updateSubmissionStatus(
     const { submissionId } = validated.data;
 
 
-    const numericSubmissionId = Number(submissionId);
+    // const numericSubmissionId = Number(submissionId);
+
+
+    if (roleSlug === "admin" && submissionId !== undefined) {
+        await sql`
+            UPDATE submission 
+            SET status = 'pending_manager'
+            WHERE id = ${submissionId}
+        `;
+    } else if (roleSlug === "agent" && submissionId !== undefined) {
+
+        await sql`
+            UPDATE submission 
+            SET status = 'pending_admin'
+            WHERE id = ${submissionId}
+        `;
+    } else if (roleSlug === "manager" && submissionId !== undefined) {
+
+        await sql`
+            UPDATE submission 
+            SET status = 'approved'
+            WHERE id = ${submissionId}
+        `;
+    } else {
+        // return { error: "Unauthorized to update this field" };
+    }
+
+
+
+
+
 
     // try {
-    await sql`
-        UPDATE submission
-	SET status='pending_admin' WHERE id = ${numericSubmissionId};  
-`;
+    //     await sql`
+    //         UPDATE submission
+    // 	SET status='pending_admin' WHERE id = ${numericSubmissionId};  
+    // `;
 
     revalidatePath('/dashboard/customers');
     redirect('/dashboard/customers');

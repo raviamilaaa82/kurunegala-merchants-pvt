@@ -12,6 +12,14 @@ const tabs = [
     { label: 'Approved', status: 'approved', roleSlug: 'manager' },
 ];
 
+// const tabs = [
+//     { label: 'All', status: null }, // null means no filter
+//     { label: 'Draft', dbStatuses: ['draft'] },
+//     { label: 'Pending Review', dbStatuses: ['pending_admin', 'pending_manager'] },
+//     { label: 'Rejected', dbStatuses: ['manager_rejected', 'admin_rejected'] },
+//     { label: 'Approved', dbStatuses: ['approved'], roleSlug: 'manager' }, // keep roleSlug if needed
+// ];
+
 export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();

@@ -168,7 +168,7 @@ export default function EditUserForm({
         >
           Cancel
         </Link>
-        <Button type="submit">Edit User</Button>
+        <Button type="submit">Update User</Button>
       </div>
     </form>
   );
