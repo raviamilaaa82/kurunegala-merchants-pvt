@@ -485,9 +485,11 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
         type: formData.get('type'),
 
     });
-
+    console.log("type");
+    console.log("submisnId");
+    console.log(submisnId);
     if (!validatedFields.success) {
-        console.log("update cu not succ");
+
         return {
             errors: validatedFields.error.flatten().fieldErrors,
             message: 'Missing Fields. Failed to Update User',
@@ -496,6 +498,8 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
 
 
     const { name, branch_id, type } = validatedFields.data;
+    console.log("type");
+    console.log(type);
     const email = String(formData.get('email') ?? '');
     const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');

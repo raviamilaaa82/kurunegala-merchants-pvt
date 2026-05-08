@@ -258,8 +258,9 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                                 id="type_id"
                                 name="type"
                                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                                defaultValue=""
+
                                 aria-describedby="type-error"
+                                defaultValue={customer.type_id}
                                 onChange={handleTypeChange}
                             // disabled={isDropDownEnabled}
                             >
