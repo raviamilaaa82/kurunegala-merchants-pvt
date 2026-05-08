@@ -4,12 +4,9 @@ import Search from '@/app/ui/search';
 import {
   CustomersTableType,
   FormattedCustomersTable,
+  CustTableTypeWithSubmission
 } from '@/app/lib/definitions';
 import { fetchFilteredCustomers, fetchFilteredSubmission } from '@/app/lib/data';
-// import { UpdateCustomer, DisableCustomer, UploadDocuments } from './buttons';
-// import StatusTabs from './status-tabs';
-
-
 import SubmissionRow from './submission-row';
 
 
@@ -17,26 +14,31 @@ import SubmissionRow from './submission-row';
 export default async function CustomersTable({
   query,
   currentPage,
-  status,
-  userId,
-  roleId,
+  // status,
+  // userId,
+  // roleId,
   roleSlug,
-  branch_id
+  // branch_id
   // customers,
+  custWithSubmissions
 }: {
   query: string,
   currentPage: number,
-  status: string,
-  userId?: string,
-  roleId?: number,
+  // status: string,
+  // userId?: string,
+  // roleId?: number,
   roleSlug?: string,
-  branch_id: string,
+  // branch_id: string,
+  custWithSubmissions: CustTableTypeWithSubmission[]
+
+
   // customers: FormattedCustomersTable[];
 }) {
 
 
   // const customers = await fetchFilteredCustomers(query);
-  const custWithSubmissions = await fetchFilteredSubmission(query, currentPage, status, userId, roleId, branch_id);
+  // const { custWithSubmissions, totalPages } = await fetchFilteredSubmission(query, currentPage, status, userId, roleId, branch_id);
+  // const custWithSubmissions = await fetchFilteredSubmission(query, currentPage, status, userId, roleId, branch_id);
   return (
     <div className="w-full">
       {/* <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>

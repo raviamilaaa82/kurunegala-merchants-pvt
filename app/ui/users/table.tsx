@@ -6,7 +6,7 @@ import {
 } from '@/app/lib/definitions';
 import { fetchFilteredUsers } from '@/app/lib/data';
 import { UpdateUsers, DisableUsers } from '@/app/ui/users/buttons';
-
+import { Badge } from "@/components/ui/badge";
 
 export default async function UserTable({
   query,
@@ -55,11 +55,22 @@ export default async function UserTable({
                           </div>
                         </div>
                         <p className="text-sm text-gray-500">
+
                           {user.is_enabled ? (
+                            <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">✓ Valid</Badge>
+
+                          ) : (
+
+                            <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">✗ Invalid</Badge>
+                          )}
+
+
+
+                          {/* {user.is_enabled ? (
                             <span className="text-green-600">✓ Valid</span>
                           ) : (
                             <span className="text-red-600">✗ Invalid</span>
-                          )}
+                          )} */}
                         </p>
                       </div>
                     </div>
@@ -129,10 +140,18 @@ export default async function UserTable({
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         {user.is_enabled ? (
+                          <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">✓ Valid</Badge>
+
+                        ) : (
+
+                          <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">✗ Invalid</Badge>
+                        )}
+
+                        {/* {user.is_enabled ? (
                           <span className="text-green-600">✓ Valid</span>
                         ) : (
                           <span className="text-red-600">✗ Invalid</span>
-                        )}
+                        )} */}
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
 

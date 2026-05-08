@@ -20,17 +20,15 @@ const links = [
   //   icon: DocumentDuplicateIcon,
   // },
   { name: 'Customers', href: '/dashboard/customers', permission: null },
-
   { name: 'Documents', href: '/dashboard/documents', permission: 'manage:documents' },
-
   { name: 'Users', href: '/dashboard/users', permission: 'manage:users' },
-
   { name: 'Branches', href: '/dashboard/branches', permission: 'manage:branch' },
-
+  { name: 'Types', href: '/dashboard/types', permission: null },
   { name: 'Roles', href: '/dashboard/roles', permission: 'manage:roles' },
-
   { name: 'Permissions', href: '/dashboard/permissions', permission: 'manage:permissions' },
   { name: 'History', href: '/dashboard/history', permission: 'manage:history' },
+  { name: 'Reports', href: '/dashboard/reports', permission: null },
+  { name: 'Finals', href: '/dashboard/finals', permission: null },
 
 ];
 
@@ -77,18 +75,21 @@ export default async function SideNav() {
           <div className="hidden md:block">
             {/* Desktop: vertical scroll inside ScrollArea */}
             <ScrollArea className="h-[500px] w-full rounded-md border p-4">
-              <NavLinks links={visibleLinks} />
+              <div className="flex flex-col gap-2">
+                <NavLinks links={visibleLinks} />
+                <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
 
-              <form action={async () => {
-                'use server';
-                await signOut({ redirectTo: '/' });
-              }}>
-                <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
-                  <PowerIcon className="w-6" />
-                  <div className="hidden md:block">Sign Out</div>
-                </button>
-              </form>
-              <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
+                <form action={async () => {
+                  'use server';
+                  await signOut({ redirectTo: '/' });
+                }}>
+                  <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
+                    <PowerIcon className="w-6" />
+                    <div className="hidden md:block">Sign Out</div>
+                  </button>
+                </form>
+                {/* <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div> */}
+              </div>
             </ScrollArea>
 
           </div>

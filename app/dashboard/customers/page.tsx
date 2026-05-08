@@ -6,16 +6,17 @@ import { lusitana } from "@/app/ui/fonts";
 import Search from "@/app/ui/search";
 import { Suspense } from 'react';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
-import { fetchCustomerPages, fetchCompanies, fetchdBranches } from "@/app/lib/data";
+import { fetchCompanies, fetchdBranches, fetchFilteredSubmission, fetchTypes } from "@/app/lib/data";
 import StatusTabs from "@/app/ui/customers/status-tabs";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 import BranchDropDowns from "@/app/ui/customers/branch-select";
+import CompanyTypesDropDown from "@/app/ui/final/com-type-select";
 
 
 
-export default async function Page(props: { searchParams?: Promise<{ query?: string, page?: string, status?: string, branch?: string }> }) {
+export default async function Page(props: { searchParams?: Promise<{ query?: string, page?: string, status?: string, branch?: string, type: string }> }) {
 
     const session = await auth();
 
@@ -34,9 +35,13 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
     const currentPage = Number(searchParams?.page) || 1;
     const status = searchParams?.status || '';//additionally added
     const branch_id = searchParams?.branch || '';
-    const totalPages = await fetchCustomerPages(query);
+    const typeId = searchParams?.type || '';
+    // const totalPages = await fetchCustomerPages(query);
     const companies = await fetchCompanies();
     const branches = await fetchdBranches();
+    const companyType = await fetchTypes();
+
+    const { custWithSubmissions, totalPages } = await fetchFilteredSubmission(query, currentPage, status, agentId, agentRoleId, branch_id, typeId);
 
     return (
 
@@ -58,6 +63,9 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 <div className="md:ml-auto">
                     <BranchDropDowns branches={branches} />
                 </div>
+                <div className="md:ml-auto">
+                    <CompanyTypesDropDown types={companyType} />
+                </div>
             </div>
 
             <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
@@ -65,7 +73,8 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 <CreateCustomer />
             </div>
             <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-                <Table query={query} currentPage={currentPage} status={status} userId={agentId} roleId={agentRoleId} roleSlug={loggedInroleSlug} branch_id={branch_id} />
+                <Table query={query} currentPage={currentPage} roleSlug={loggedInroleSlug} custWithSubmissions={custWithSubmissions} />
+                {/* status={status} userId={agentId} roleId={agentRoleId} branch_id={branch_id} */}
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages} />

@@ -7,7 +7,7 @@ import {
 } from '@/app/lib/definitions';
 import { fetchFilteredDocuments } from '@/app/lib/data';
 import { UpdateDocument, DisableDocument } from '@/app/ui/documents/buttons';
-
+import { Badge } from "@/components/ui/badge";
 
 export default async function DocumentsTable({
   query,
@@ -49,11 +49,23 @@ export default async function DocumentsTable({
                         <div className="mb-2 flex items-center justify-between w-full">
                           <div className="flex items-center w-full">
                             <p className="text-sm text-gray-500">
+
                               {document.is_valid ? (
+                                <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">✓ Valid</Badge>
+
+                              ) : (
+
+                                <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">✗ Invalid</Badge>
+                              )}
+
+
+
+
+                              {/* {document.is_valid ? (
                                 <span className="text-green-600">✓ Valid</span>
                               ) : (
                                 <span className="text-red-600">✗ Invalid</span>
-                              )}
+                              )} */}
                             </p>
 
                           </div>
@@ -114,10 +126,18 @@ export default async function DocumentsTable({
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         {document.is_valid ? (
+                          <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">✓ Valid</Badge>
+
+                        ) : (
+
+                          <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">✗ Invalid</Badge>
+                        )}
+
+                        {/* {document.is_valid ? (
                           <span className="text-green-600">✓ Valid</span>
                         ) : (
                           <span className="text-red-600">✗ Invalid</span>
-                        )}
+                        )} */}
                       </td>
                       {/* <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         {customer.total_pending}

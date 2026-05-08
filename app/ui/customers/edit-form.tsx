@@ -1,5 +1,5 @@
 'use client';
-import { CustomerField, Documents, CustTableTypeWithSubmission, Branches } from '@/app/lib/definitions';
+import { CustomerField, Documents, CustTableTypeWithSubmission, Branches, Types } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
     CheckIcon,
@@ -26,7 +26,7 @@ type CustomerErrors = {
 
 
 
-export default function Form({ customer, submisnId, branches }: { customer: any, submisnId?: string, branches: Branches[] }) {
+export default function Form({ customer, submisnId, branches, types }: { customer: any, submisnId?: string, branches: Branches[], types: Types[] }) {
     const initialState: CustomerState = { message: null, errors: {} };
     const updateCustomerWithId = updateCustomer.bind(null, customer.customer_id, submisnId);
     const [state, formAction] = useActionState(updateCustomerWithId, initialState);
@@ -76,6 +76,14 @@ export default function Form({ customer, submisnId, branches }: { customer: any,
     };
 
     const handleBranchesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedValue = event.target.value;
+
+        // setSelectedDocument(selectedValue);
+        // setSelectedDocumentId(event.target.value);
+
+    };
+
+    const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedValue = event.target.value;
 
         // setSelectedDocument(selectedValue);
@@ -237,6 +245,45 @@ export default function Form({ customer, submisnId, branches }: { customer: any,
                                 ))} */}
                         </div>
                     </div>
+
+
+                    <div className="mb-4">
+
+                        <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+                            Type
+
+                        </label>
+                        <div className="relative">
+                            <select
+                                id="type_id"
+                                name="type"
+                                className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                defaultValue=""
+                                aria-describedby="type-error"
+                                onChange={handleTypeChange}
+                            // disabled={isDropDownEnabled}
+                            >
+                                <option value="" disabled>
+                                    Select a Type
+                                </option>
+                                {types.map((type) => (
+                                    <option key={type.id} value={type.id}>
+                                        {type.type}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div id="document-error" aria-live="polite" aria-atomic="true">
+                            {/* {state.errors?.branch_id &&
+                state.errors.branch_id.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))} */}
+                        </div>
+                    </div>
+
 
                     <div className="mb-4">
                         <label htmlFor="log" className="mb-2 block text-sm font-medium">

@@ -14,7 +14,10 @@ import {
   Branches,
   Company,
   FinalUploadKey,
-  ActivityHistory
+  ActivityHistory,
+  Reports,
+  Types,
+  FinalCustTableTypeWithSubmission
   // Role
 
 } from './definitions';
@@ -23,6 +26,7 @@ import exp from 'constants';
 import { sql } from './db';
 import { auth } from '@/auth';
 import { stat } from 'fs';
+import { Andada_Pro } from 'next/font/google';
 
 // const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 // const sql = postgres(process.env.POSTGRES_URL!, { ssl: false });
@@ -374,7 +378,8 @@ export async function fetchFilteredCustomers(query: string) {
 }
 
 //fetchin customer with submission 
-export async function fetchFilteredSubmission(query: string, currentPage: number, status: string, agentId: string | null = null, roleId: number | undefined, branchId: string | null = null) {
+export async function fetchFilteredSubmission(query: string, currentPage: number, status: string, agentId: string | null = null,
+  roleId: number | undefined, branchId: string | null = null, typeId: string) {
   try {
     let new_status = '';
     const session = await auth();
@@ -384,12 +389,10 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
 
     const userId = session?.user?.id ?? '';
     const role_id = session?.user.roleId;
-    // const role_slug = session?.user.roleSlug;
+
     const role_slug = session?.user.roleSlug ?? '';
 
 
-    // const resolvedAgentId = role_slug === 'agent' ? agentId : null; // this line make only agent for id as parameter to query. admin and manager dont need.
-    // const resolvedAgentId = role_slug === 'agent' ? agentId : userId;
     const resolvedAgentId = userId;
 
 
@@ -440,7 +443,7 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
     // const agent = agentId ?? null;
 
 
-    const data = sql<CustTableTypeWithSubmission[]>`
+    const custWithSubmissions = await sql<CustTableTypeWithSubmission[]>`
      SELECT 
       s.id AS submission_id,
       s.status,
@@ -466,28 +469,73 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
      
   )
   AND s.status::text = ANY(${statusFilter}::text[])
-  AND (${branchId}::text IS NULL OR c.branch_id::text = ${branchId}::text)
-  AND (  
-     CASE
-        -- DRAFT rules
+  ${branchId && branchId !== "all"
+        ? sql`AND c.branch_id::text = ${branchId}::text`
+        : sql``
+      }
+  ${typeId && typeId !== "all"
+        ? sql`AND c.type_id::text = ${typeId}::text`
+        : sql``
+      }
+    AND(
+      CASE
+        --DRAFT rules
         WHEN s.status = 'draft' AND ${isAgentOrDraftOnly} THEN 
-            s.agent_id::text = ${userId}::text          -- own draft
-            OR r.slug IN ('admin', 'manager')            -- OR created by admin/manager
+            s.agent_id:: text = ${userId}:: text-- own draft
+            OR r.slug IN('admin', 'manager')-- OR created by admin / manager
         WHEN s.status = 'draft' THEN 
-            s.agent_id::text = ${userId}::text           -- admin/manager: own drafts only
+            s.agent_id:: text = ${userId}:: text-- admin / manager: own drafts only
 
-        -- NON-DRAFT rules
+        --NON - DRAFT rules
         WHEN ${isAgentOrDraftOnly} THEN 
-            s.agent_id::text = ${userId}::text           -- agent: own records only
-        ELSE TRUE                                        -- admin/manager: see all
+            s.agent_id:: text = ${userId}:: text-- agent: own records only
+        ELSE TRUE-- admin / manager: see all
     END
-  )
+    )
     ORDER BY s.id DESC
   LIMIT ${ITEMS_PER_PAGE}
   OFFSET ${offset}
-`;
+    `;
 
-    return data;
+
+
+    const countData = await sql`
+  SELECT COUNT(DISTINCT s.id) AS total
+  FROM submission s
+  LEFT JOIN customers c ON c.id = s.customer_id
+  LEFT JOIN users u ON u.id:: text = s.agent_id:: text
+  LEFT JOIN roles r ON r.id = u.role_id
+    WHERE(
+      c.name ILIKE ${`%${query}%`} OR
+  c.cust_code ILIKE ${`%${query}%`} OR
+  c.mobile ILIKE ${`%${query}%`}
+  )
+  AND s.status:: text = ANY(${statusFilter}:: text[])
+  ${branchId && branchId !== "all"
+        ? sql`AND c.branch_id::text = ${branchId}::text`
+        : sql``
+      }
+     ${typeId && typeId !== "all"
+        ? sql`AND c.type_id::text = ${typeId}::text`
+        : sql``
+      }
+  AND(
+    CASE
+        WHEN s.status = 'draft' AND ${isAgentOrDraftOnly} THEN 
+            s.agent_id:: text = ${userId}:: text
+            OR r.slug IN('admin', 'manager')
+        WHEN s.status = 'draft' THEN 
+            s.agent_id:: text = ${userId}:: text
+        WHEN ${isAgentOrDraftOnly} THEN 
+            s.agent_id:: text = ${userId}:: text
+        ELSE TRUE
+    END
+  )
+    `;
+
+    const totalPages = Math.ceil(Number(countData[0].total) / ITEMS_PER_PAGE);
+
+    return { custWithSubmissions, totalPages };
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch customer table.');
@@ -495,12 +543,15 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
 }
 
 
+
+
+
 export async function fetchImagesKeysbWithSubmission(submissionId: string | null) {
 
   try {
     const data = await sql<ImageListTypeWithSubmit[]>`
-     SELECT 
-    s.id AS submission_id,
+  SELECT
+  s.id AS submission_id,
     s.status,
     s.agent_id,
     s.submitted_at,
@@ -508,17 +559,17 @@ export async function fetchImagesKeysbWithSubmission(submissionId: string | null
     s.manager_note,
 
     c.id AS customer_id,
-    c.name AS customer_name,
-    c.email AS customer_email,
-    c.mobile AS customer_mobile,
-    c.loc_link,
+      c.name AS customer_name,
+        c.email AS customer_email,
+          c.mobile AS customer_mobile,
+            c.loc_link,
 
-    d.id,
-	  d.document_id AS document_id,
-    d.file_key,
-    d.file_name,
-    d.deleted_at,
-    doc.document AS document_type
+            d.id,
+            d.document_id AS document_id,
+              d.file_key,
+              d.file_name,
+              d.deleted_at,
+              doc.document AS document_type
 
 FROM submission s
 LEFT JOIN customers c ON c.id = s.customer_id
@@ -527,7 +578,7 @@ LEFT JOIN tbl_documents doc ON d.document_id = doc.id
 
 WHERE s.id = ${submissionId}
 ORDER BY d.id;
-    `;
+  `;
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -537,6 +588,112 @@ ORDER BY d.id;
 
 
 }
+
+export async function fetchFilteredSubmissionFinal(query: string, currentPage: number, status: string, agentId: string | null = null, roleId: number | undefined, branchId: string | null = null) {
+  try {
+    let new_status = '';
+    const session = await auth();
+    // if (!session?.user?.id) {
+    //   throw new Error('Unauthorized');
+    // }
+
+    const userId = session?.user?.id ?? '';
+    const role_id = session?.user.roleId;
+    // const role_slug = session?.user.roleSlug;
+    const role_slug = session?.user.roleSlug ?? '';
+
+    const resolvedAgentId = userId;
+    const isAgentOrDraftOnly = role_slug === 'agent';
+
+    const ITEMS_PER_PAGE = 6;
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    // const agent = agentId ?? null;
+
+
+    const custWithSubmissions = await sql<FinalCustTableTypeWithSubmission[]>`
+  SELECT
+  s.id AS submission_id,
+    s.status,
+    s.admin_note,
+    s.manager_note,
+    s.is_valid,
+    c.id AS customer_id,
+      c.name AS customer_name,
+        c.email AS customer_email,
+          c.image_url,
+          c.mobile AS customer_mobile,
+            c.loc_link,
+            c.cust_code,
+            r.slug AS role_slug,
+              r.display_name AS role_name    
+FROM submission s
+LEFT JOIN customers c ON c.id = s.customer_id
+LEFT JOIN users u ON u.id:: text = s.agent_id:: text
+LEFT JOIN roles r ON r.id = u.role_id
+  WHERE(
+    c.name ILIKE ${`%${query}%`} OR
+c.cust_code ILIKE ${`%${query}%`} OR
+c.mobile ILIKE ${`%${query}%`}
+)
+AND s.status:: text = 'approved'
+ ${branchId && branchId !== "all"
+        ? sql`AND c.branch_id::text = ${branchId}::text`
+        : sql``
+      }
+GROUP BY s.id, c.id, r.id
+ORDER BY s.id DESC
+LIMIT ${ITEMS_PER_PAGE}
+OFFSET ${offset}
+`;
+
+    const countData = await sql`SELECT COUNT(DISTINCT s.id) AS total
+FROM submission s
+LEFT JOIN customers c ON c.id = s.customer_id
+LEFT JOIN users u ON u.id:: text = s.agent_id:: text
+LEFT JOIN roles r ON r.id = u.role_id
+WHERE(
+  c.name ILIKE ${`%${query}%`} OR
+    c.cust_code ILIKE ${`%${query}%`} OR
+    c.mobile ILIKE ${`%${query}%`}
+)
+AND s.status:: text = 'approved'
+AND(${branchId}:: text IS NULL OR c.branch_id:: text = ${branchId}:: text)`;
+
+    const totalPages = Math.ceil(Number(countData[0].total) / ITEMS_PER_PAGE);
+    // return totalPages;
+
+    // return data;
+    return { custWithSubmissions, totalPages };
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch customer table.');
+  }
+}
+
+
+// export async function fetchFinalApprovedPages(query: string, branchId: string | null = null) {
+//   try {
+//     const data = await sql`SELECT COUNT(DISTINCT s.id) AS total
+// FROM submission s
+// LEFT JOIN customers c ON c.id = s.customer_id
+// LEFT JOIN users u ON u.id::text = s.agent_id::text
+// LEFT JOIN roles r ON r.id = u.role_id
+// WHERE (
+//     c.name ILIKE ${`%${query}%`} OR
+//     c.cust_code ILIKE ${`%${query}%`} OR
+//     c.mobile ILIKE ${`%${query}%`}
+// )
+// AND s.status::text = 'approved'
+// AND (${branchId}::text IS NULL OR c.branch_id::text = ${branchId}::text)`;
+
+//     const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+//     return totalPages;
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch total number of customers.');
+//   }
+
+// }
 
 
 export async function fetchImagesKeyForUploadFinalDoc(submissionId: string | null) {
@@ -671,7 +828,8 @@ export async function fetchCustomerBySubmissionId(submissionId: string | null) {
       c.mobile AS customer_mobile,
       c.loc_link,
       c.cust_code,
-      c.branch_id
+      c.branch_id,
+      c.type_id
   FROM submission s
   LEFT JOIN customers c ON c.id = s.customer_id
   WHERE s.id=${submissionId};
@@ -886,6 +1044,59 @@ ORDER BY id ASC	`;
   }
 }
 
+export async function fetchTypes() {
+
+  try {
+    const data = await sql<Types[]>`
+SELECT id, type, branch_id, is_valid
+	FROM types WHERE is_valid='true'
+ORDER BY id ASC	`;
+    return data;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch branches table.');
+  }
+}
+
+export async function fetchTypePages(query: string) {
+  try {
+    const data = await sql`SELECT COUNT(*) FROM types WHERE type ILIKE ${`%${query}%`}`;
+
+    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of customers.');
+  }
+
+}
+
+
+export async function fetchFilteredTypes(query: string) {
+  try {
+    const data = await sql<Types[]>`
+          SELECT 
+              t.id,
+              t.type,
+              t.is_valid,    
+                  t.branch_id,                 
+              b.branch
+              
+          FROM types t
+          JOIN branches b ON t.branch_id = b.id
+          WHERE
+                t.type ILIKE ${`%${query}%`} OR
+                b.branch ILIKE ${`%${query}%`}
+          ORDER BY id ASC		
+	  `;
+    return data;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch branches table.');
+  }
+}
+
+
 export async function fetchUserActivity(query: string) {
 
   try {
@@ -942,3 +1153,242 @@ export async function fetchUserActivityPages(query: string) {
   }
 
 }
+
+
+
+const ITEMS_PER_PAGE1 = 10;
+
+export async function getSubmissionsByStatus(
+  status: string,
+  currentPage: number,
+  query: string = '' // optional search by customer name
+) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE1;
+
+  const rows = await sql`
+    SELECT 
+        s.id                AS submission_id,
+        s.agent_id,
+        s.status,
+        s.admin_note,
+        s.manager_note,
+        s.created_at,
+        c.id                AS customer_id,
+        c.name              AS customer_name,
+        c.mobile,
+        c.cust_code,
+        c.branch_id,
+        COUNT(d.id)         AS document_count
+    FROM submission s
+    JOIN document d       ON d.submission_id = s.id
+    JOIN customers c      ON d.master_id = c.id
+    JOIN tbl_documents td ON d.document_id = td.id
+    WHERE s.status = ${status}
+      AND c.name ILIKE ${'%' + query + '%'}
+    GROUP BY s.id, c.id
+    ORDER BY s.created_at DESC
+    LIMIT ${ITEMS_PER_PAGE}
+    OFFSET ${offset}
+  `;
+
+  return rows;
+}
+
+export async function getSubmissionsCount(
+  status: string,
+  query: string = ''
+) {
+  const result = await sql`
+    SELECT COUNT(DISTINCT s.id) AS total
+    FROM submission s
+    JOIN document d  ON d.submission_id = s.id
+    JOIN customers c ON d.master_id = c.id
+    WHERE s.status = ${status}
+      AND c.name ILIKE ${'%' + query + '%'}
+  `;
+  return Math.ceil(Number(result[0].total) / ITEMS_PER_PAGE);
+}
+
+
+
+export async function getSubmissionById(id: string) {
+  const rows = await sql`
+    SELECT 
+        s.id              AS submission_id,
+        s.agent_id,
+        s.status,
+        s.admin_note,
+        s.manager_note,
+        s.created_at,
+        c.name            AS customer_name,
+        c.mobile,
+        c.cust_code,
+        c.branch_id,
+        td.document       AS document_name,
+        td.is_valid
+    FROM submission s
+    JOIN document d       ON d.submission_id = s.id
+    JOIN customers c      ON d.master_id = c.id
+    JOIN tbl_documents td ON d.document_id = td.id
+    WHERE s.id = ${id}
+    ORDER BY td.document
+  `;
+
+  if (!rows.length) return null;
+
+  const first = rows[0];
+  return {
+    submission_id: first.submission_id,
+    agent_id: first.agent_id,
+    status: first.status,
+    admin_note: first.admin_note,
+    manager_note: first.manager_note,
+    created_at: first.created_at,
+    customer_name: first.customer_name,
+    mobile: first.mobile,
+    cust_code: first.cust_code,
+    branch_id: first.branch_id,
+    documents: rows.map(r => ({
+      document_name: r.document_name,
+      is_valid: r.is_valid,
+    })),
+  };
+}
+
+
+
+
+// export async function getSubmissionsByStatus(status: string) {
+//   const rows = await sql`
+//     SELECT 
+//         s.id AS submission_id,
+//         s.agent_id,
+//         s.status,
+//         s.admin_note,
+//         s.manager_note,
+//         s.created_at,
+//         c.id AS customer_id,
+//         c.name AS customer_name,
+//         c.mobile,
+//         c.cust_code,
+//         c.branch_id,
+//         td.id AS document_id,
+//         td.document AS document_name,
+//         td.is_valid
+//     FROM submission s
+//     JOIN document d ON d.submission_id = s.id
+//     JOIN customers c ON d.master_id = c.id
+//     JOIN tbl_documents td ON d.document_id = td.id
+//     WHERE s.status = ${status}
+//     ORDER BY s.created_at DESC
+//   `;
+//   console.log("rows");
+//   console.log(rows);
+//   // Group documents under each submission
+//   const grouped = rows.reduce((acc, row) => {
+//     const key = row.submission_id;
+//     if (!acc[key]) {
+//       acc[key] = {
+//         submission_id: row.submission_id,
+//         agent_id: row.agent_id,
+//         status: row.status,
+//         admin_note: row.admin_note,
+//         manager_note: row.manager_note,
+//         created_at: row.created_at,
+//         customer: {
+//           id: row.customer_id,
+//           name: row.customer_name,
+//           mobile: row.mobile,
+//           cust_code: row.cust_code,
+//           branch_id: row.branch_id,
+//         },
+//         documents: [],
+//       };
+//     }
+//     acc[key].documents.push({
+//       document_id: row.document_id,
+//       document_name: row.document_name,
+//       is_valid: row.is_valid,
+//     });
+
+//     return acc;
+//   }, {} as Record<string, any>);
+//   console.log("Object.values(grouped)");
+//   console.log(Object.values(grouped));
+//   return Object.values(grouped);
+// }
+
+
+
+
+
+// export async function fetchApprovedReportsData() {
+
+//   try {
+//     const data = await sql<Reports[]>`
+//         SELECT 
+//     s.id AS submission_id,
+//     s.status,
+//     s.admin_note,
+//     s.manager_note,
+//     c.name AS customer_name,   
+//     c.cust_code,   
+//     td.document AS document_name,
+//     td.is_valid
+// FROM public.submission s
+// JOIN public.customers c   ON s.master_id = c.id
+// JOIN public.document d    ON d.submission_id = s.id
+// JOIN public.tbl_documents td ON d.document_id = td.id
+// WHERE s.status = 'approved'
+//   AND s.id = $1          -- filter by submission id
+//   -- AND c.name ILIKE $2  -- uncomment to filter by customer name
+// ORDER BY td.document;
+//     `;
+//     return data;
+
+
+//   } catch (error) {
+
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch activity details.');
+//   }
+
+
+
+// }
+
+
+// export async function fetchReportsDataByStatus(status: string) {
+
+//   try {
+//     const data = await sql<Reports[]>`
+//         SELECT 
+//     s.id AS submission_id,
+//     s.status,
+//     s.admin_note,
+//     s.manager_note,
+//     c.name AS customer_name,   
+//     c.cust_code,   
+//     td.document AS document_name,
+//     td.is_valid
+// FROM public.submission s
+// JOIN public.customers c   ON s.master_id = c.id
+// JOIN public.document d    ON d.submission_id = s.id
+// JOIN public.tbl_documents td ON d.document_id = td.id
+// WHERE s.status = 'approved'
+//   AND s.id = $1          -- filter by submission id
+//   -- AND c.name ILIKE $2  -- uncomment to filter by customer name
+// ORDER BY td.document;
+//     `;
+//     return data;
+
+
+//   } catch (error) {
+
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch activity details.');
+//   }
+
+
+
+// }

@@ -27,10 +27,10 @@ export default function BranchDropDowns({ branches }: { branches: Branches[] }) 
         if (!searchParams.has('branch') && branches.length > 0) {
             const params = new URLSearchParams(searchParams.toString());
             params.set('branch', String(branches[0].id)); // 👈 use first branch as default
-            params.set('page', '1');
+            // params.set('page', '1');
             router.replace(`/dashboard/customers?${params.toString()}`); // 👈 replace not push (no back-button history)
         }
-    }, [branches]); // 👈 run when branches load
+    }, []); // 👈 run when branches load
 
     return (
         <div className="flex w-full">
@@ -48,6 +48,9 @@ export default function BranchDropDowns({ branches }: { branches: Branches[] }) 
                     onChange={handleBranchChange}
                 // disabled={isDropDownEnabled}
                 >
+                    <option key="all" value="all">
+                        All
+                    </option>
                     {branches.map((branch) => (
                         <option key={branch.id} value={branch.id}>
                             {branch.branch}

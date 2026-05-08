@@ -7,45 +7,21 @@ import {
     AccordionTrigger,
     AccordionContent,
 } from "@/components/ui/accordion";
-import {
-    Dialog,
-    DialogContent,
-    DialogTrigger,
-    DialogTitle,
-} from "@/components/ui/dialog";
-// import { UpdateCustomer, DisableCustomer } from './buttons';
-import { updateRoleDisplayName, updateRolePermissions } from '@/app/lib/actions';
-import { PencilIcon, PlusIcon, TrashIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+
+
+import { updateRolePermissions } from '@/app/lib/actions';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 const ALL_PERMISSIONS = [
-    // 'create:customers',
-    // 'view:customers',
-    // 'edit:customers',
-    // 'cancel:customers',
     'manage:customers',
-
-    // 'create:documents',
-    // 'view:documents',
-    // 'edit:documents',
-    // 'cancel:documents',
     'manage:documents',
-
-    // 'create:users',
-    // 'view:users',
-    // 'edit:users',
-    // 'cancel:users',
-    // 'manage:users',
     'manage:users',
-
-    // 'create:roles',
-    // 'view:roles',
-    // 'edit:roles',
-    // 'cancel:roles',
     'manage:roles',
-
     'manage:permissions',
     'manage:branch',
     'manage:history',
+    'manage:reports',
+    'manage:final'
 ];
 type Role = {
     id: number;
@@ -151,7 +127,7 @@ export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { 
                 className="rounded-md border p-2 hover:bg-gray-100"
                 onClick={() => setOpen(open ? "" : "item-1")}
             >
-                <ViewColumnsIcon className="w-5" />
+                <ChevronDownIcon className="w-5" />
             </button>
             {/* <UpdateCustomer id={customer.id} />
             <DisableCustomer id={customer.id} is_enabled={customer.is_enabled} /> */}

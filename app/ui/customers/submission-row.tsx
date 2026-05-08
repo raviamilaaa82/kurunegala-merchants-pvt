@@ -7,16 +7,10 @@ import {
     AccordionTrigger,
     AccordionContent,
 } from "@/components/ui/accordion";
-// import {
-//     Dialog,
-//     DialogContent,
-//     DialogTrigger,
-//     DialogTitle,
-// } from "@/components/ui/dialog";
-// import { UpdateCustomer, DisableCustomer, UploadDocuments, UploadDocumentsWithSessionId } from './buttons';
+
 import { UpdateCustomer, AcceptSumbission, RejectSumbission } from '@/app/ui/customers/buttons';
-import ApproveDialog from "./approve-dialog";
-import { PencilIcon, PlusIcon, TrashIcon, ViewColumnsIcon, ArrowDownTrayIcon, ArrowDownIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { updateManagerAndAdminNotes, NotesFormState } from "@/app/lib/actions";
 
 import Lightbox, { CloseIcon } from "yet-another-react-lightbox";
@@ -27,12 +21,13 @@ import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
 
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
-// import "yet-another-react-lightbox/plugins/zoom.css";
+
 import { Button } from '@/app/ui/button';
 import { useActionState } from 'react';
 
 import { ImageWithModal } from "./ImageWithModal";
-
+import { Badge } from "@/components/ui/badge";
+import { ArrowUpRightIcon } from "lucide-react";
 
 
 
@@ -64,6 +59,28 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
     const [showPdf, setShowPdf] = useState(false);
     const [pdfUrl, setPdfUrl] = useState("");
     const [isOpen, setIsOpen] = useState(false);
+
+
+    const statusStyles: Record<string, string> = {
+        draft: "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300",
+        approved: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
+        pending_admin: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+        pending_manager: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+        admin_rejected: "bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300",
+        manager_rejected: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300",
+    };
+
+    const labelMap: Record<string, string> = {
+        draft: " Draft",
+        approved: "Approved",
+        pending_admin: "Pending Admin",
+        pending_manager: "Pending Manager",
+        admin_rejected: "Admin Rejected",
+        manager_rejected: "Manager Rejected",
+    };
+
+
+
 
 
     useEffect(() => {
@@ -587,7 +604,20 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                     {/* Top: customer info */}
                     <div>
                         <div className="mb-2 flex items-center gap-3">
+
                             {submission.loc_link ? (
+
+                                <Badge asChild variant="outline" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                    <a href={submission.loc_link} target="_blank">
+                                        Google Map <ArrowUpRightIcon data-icon="inline-end" />
+                                    </a>
+                                </Badge>) : (
+                                <span className="text-gray-400">—</span>
+                            )
+                            }
+
+
+                            {/* {submission.loc_link ? (
                                 <a
                                     href={submission.loc_link}
                                     target="_blank"
@@ -598,7 +628,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                                 </a>
                             ) : (
                                 <span className="text-gray-400">—</span>
-                            )}
+                            )} */}
                         </div>
                         <p className="text-sm text-gray-500">{submission.cust_code}</p>
                     </div>
@@ -612,7 +642,12 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                     {/* Top: customer info */}
                     <div>
                         <div className="mb-2 flex items-center gap-3">
-                            {submission.status}
+                            {statusStyles[submission.status] && (
+                                <Badge className={statusStyles[submission.status]}>
+                                    {labelMap[submission.status]}
+                                </Badge>
+                            )}
+                            {/* {submission.status} */}
                         </div>
                         {/* <p className="text-sm text-gray-500">{submission.cust_code}</p> */}
                     </div>
@@ -695,6 +730,16 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                 <td className="bg-white px-4 py-5">{submission.customer_mobile}</td> */}
                 <td className="bg-white px-4 py-5 text-sm">
                     {submission.loc_link ? (
+
+                        <Badge asChild variant="outline" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            <a href={submission.loc_link} target="_blank">
+                                Google Map <ArrowUpRightIcon data-icon="inline-end" />
+                            </a>
+                        </Badge>) : (
+                        <span className="text-gray-400">—</span>
+                    )
+                    }
+                    {/* {submission.loc_link ? (
                         <a
                             href={submission.loc_link}
                             target="_blank"
@@ -705,7 +750,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                         </a>
                     ) : (
                         <span className="text-gray-400">—</span>
-                    )}
+                    )} */}
                 </td>
                 <td className="bg-white px-4 py-5">
 
@@ -714,8 +759,14 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
 
 
                 {/* className="bg-white px-4 py-5" */}
-
-                <td className={`bg-white px-4 py-5 ${submission.status === 'admin_rejected' || submission.status === 'manager_rejected'
+                <td className="bg-white px-4 py-5">
+                    {statusStyles[submission.status] && (
+                        <Badge className={statusStyles[submission.status]}>
+                            {labelMap[submission.status]}
+                        </Badge>
+                    )}
+                </td>
+                {/* <td className={`bg-white px-4 py-5 ${submission.status === 'admin_rejected' || submission.status === 'manager_rejected'
                     ? 'text-red-500'
                     : submission.status === 'approved'
                         ? 'text-green-500'
@@ -723,7 +774,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                     }`}>
 
                     {submission.status}
-                </td>
+                </td> */}
                 <td className="bg-white px-4 py-5">
                     <div className="flex justify-end gap-3">{actionButtons}</div>
                 </td>

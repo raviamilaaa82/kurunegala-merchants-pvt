@@ -1,4 +1,4 @@
-import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { disableBranch } from '@/app/lib/actions';
 // import { createDocument } from '@/app/lib/actions';
@@ -32,7 +32,7 @@ export function DisableBranch({ id, is_valid }: { id: string, is_valid: boolean 
     <form action={toggleBranchStatus}>
       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Enabled</span>
-        {is_valid ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />}
+        {is_valid ? <XMarkIcon className="w-5" /> : <CheckIcon className="w-5" />}
         {/* <TrashIcon className="w-5" /> */}
       </button>
     </form>

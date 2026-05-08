@@ -49,7 +49,14 @@ const BranchSchema = z.object({
         .gt(0, { message: 'Company ID is empty!' }),
 
 });
+const TypeSchema = z.object({
+    id: z.string(),
+    type: z.string({ invalid_type_error: 'Please enter type name' }).min(1, 'type name cannot be empty'),
+    branch: z.coerce
+        .number()
+        .gt(0, { message: 'Branch ID is empty!' }),
 
+});
 
 const FileInfoSchema = z.object({
     name: z.string(),
@@ -63,6 +70,9 @@ const CustomerSchema = z.object({
     branch_id: z.coerce
         .number()
         .gt(0, { message: 'Branch ID is empty!' }),
+    type: z.coerce
+        .number()
+        .gt(0, { message: 'Type ID is empty!' }),
 
 
 });
@@ -74,6 +84,9 @@ const CustomerUpdateSchema = z.object({
     branch_id: z.coerce
         .number()
         .gt(0, { message: 'Branch ID is empty!' }),
+    type: z.coerce
+        .number()
+        .gt(0, { message: 'Type ID is empty!' }),
 
 });
 
@@ -150,6 +163,8 @@ const UpdateRole = RoleSchema.omit({ id: true });
 const CreateBranch = BranchSchema.omit({ id: true });
 const UpdateBranch = BranchSchema.omit({ id: true });
 
+const CreateType = TypeSchema.omit({ id: true });
+
 export type State = {
     errors?: {
 
@@ -175,6 +190,14 @@ export type BranchState = {
     message?: string | null;
 }
 
+export type TypeState = {
+    errors?: {
+        type?: string[];
+        branch?: string[];
+    };
+    message?: string | null;
+}
+
 export type CustomerErrorResponse = {
     errors?: { name?: string[] };
     message?: string | null;
@@ -190,6 +213,7 @@ export type CustomerState = {
     errors?: {
         name?: string[];
         branch_id?: string[];
+        type?: string[];
     };
     message?: string | null;
 }
@@ -397,7 +421,8 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
 
     const validatedFields = CreateCustomer.safeParse({
         name: formData.get('name'),
-        branch_id: formData.get('branch_id'),
+        branch_id: formData.get('branch'),
+        type: formData.get('type'),
     });
 
     if (!validatedFields.success) {
@@ -409,7 +434,7 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
 
     }
 
-    const { name, branch_id } = validatedFields.data;
+    const { name, branch_id, type } = validatedFields.data;
     const email = String(formData.get('email') ?? '');
     const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');
@@ -425,8 +450,8 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
             // 1. Insert customer
             const [customer] = await txn`
             
-                INSERT INTO customers (name, email, image_url, mobile, loc_link,cust_code,branch_id)
-                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink},${customer_code},${branch_id})
+                INSERT INTO customers (name, email, image_url, mobile, loc_link,cust_code,branch_id,type_id)
+                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink},${customer_code},${branch_id},${type})
                 RETURNING id
             `;
 
@@ -457,6 +482,7 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
     const validatedFields = UpdateCustomer.safeParse({
         name: formData.get('name'),
         branch_id: formData.get('branch_id'),
+        type: formData.get('type'),
 
     });
 
@@ -469,7 +495,7 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
     }
 
 
-    const { name, branch_id } = validatedFields.data;
+    const { name, branch_id, type } = validatedFields.data;
     const email = String(formData.get('email') ?? '');
     const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');
@@ -481,7 +507,7 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
     await sql`
         UPDATE customers
 	SET  name=${name}, email=${email}, image_url=${img_url}, mobile=${mobile}, loc_link=${locationLink},
-    cust_code=${customer_code}, branch_id=${branch_id}
+    cust_code=${customer_code}, branch_id=${branch_id},type_id=${type}
 	
 	WHERE id = ${id}   
   `;
@@ -491,9 +517,8 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
         redirect(`/dashboard/customers/${id}/upload?submissionId=${submisnId}&name=${encodeURIComponent(name)}&mode=edit`);
     }
 
-
-
 }
+
 export async function updateSubmissionStatus(
     prevState: SubmissionState | undefined,
     formData: FormData
@@ -562,7 +587,15 @@ export async function updateSubmissionStatus(
     redirect('/dashboard/customers');
 }
 
-
+export async function disableSubmissionFinalData(id: string, is_valid: boolean) {
+    // const numericId = Number(id);
+    await sql`UPDATE submission
+  SET is_valid = ${is_valid}
+  WHERE id = ${id}`;
+    // revalidatePath('/dashboard/invoices');
+    revalidatePath('/dashboard/finals');
+    // redirect('/dashboard/documents');
+}
 
 // export async function createCustomerDocument(prevState: CustomerState, formData: FormData) {
 
@@ -1067,6 +1100,54 @@ export async function acceptSubmissionAdminOrManager(summissionId: string) {
     revalidatePath('/dashboard/customers');
     redirect('/dashboard/customers');
 }
+
+export async function createType(prevState: TypeState, formData: FormData) {
+
+    const validatedFields = CreateType.safeParse({
+        type: formData.get('type'),
+        branch: formData.get('branch')
+    });
+
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Create Type',
+        };
+    }
+
+    const { type, branch } = validatedFields.data;
+
+    try {
+
+        await sql`
+        INSERT INTO types(
+	 type, branch_id)
+	VALUES (${type}, ${branch});    
+  `;
+    } catch (error) {
+
+        console.error(error);
+        // return {
+        //     message: 'Database Error: Failed to Create Invoice.',
+        // };
+    }
+    revalidatePath('/dashboard/types');
+    redirect('/dashboard/types');
+
+}
+
+export async function disableType(id: string, is_valid: boolean) {
+
+    await sql`UPDATE types
+  SET is_valid = ${is_valid}
+  WHERE id = ${id}`;
+
+    revalidatePath('/dashboard/types');
+
+}
+
+
 
 
 

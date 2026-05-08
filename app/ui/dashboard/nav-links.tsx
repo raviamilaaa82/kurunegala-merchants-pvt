@@ -9,7 +9,7 @@ import {
   ShieldCheckIcon,
   KeyIcon,
   MapPinIcon,
-  ClockIcon
+  ClockIcon, DocumentArrowDownIcon, RectangleGroupIcon, CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import * as Icons from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -27,6 +27,9 @@ const iconMap: Record<string, React.ElementType> = {
   'Permissions': KeyIcon,
   'Branches': MapPinIcon,
   'History': ClockIcon,
+  'Reports': DocumentArrowDownIcon,
+  'Types': RectangleGroupIcon,
+  'Finals': CheckCircleIcon,
 };
 type NavLink = {
   name: string;

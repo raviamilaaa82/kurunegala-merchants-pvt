@@ -1,14 +1,15 @@
 'use client';
-import { Branches } from '@/app/lib/definitions';
+import { Branches, Types } from '@/app/lib/definitions';
 
 import { Button } from '@/app/ui/button';
 import { createCustomer, CustomerState, } from '@/app/lib/actions';
-import { useActionState, useState, } from 'react';
+import { useActionState, useEffect, useState, } from 'react';
 import CaptureLocationButton from './capture_location';
 import { useRouter } from 'next/navigation';
 import MapPicker from './map-picker';
 
 import ProfileImageUploader from './profile-image-uploader';
+import { error } from 'console';
 
 type CustomerErrors = {
   name?: string[];
@@ -17,9 +18,38 @@ type CustomerErrors = {
 
 
 
-export default function Form({ branches }: { branches: Branches[] }) {
+export default function Form({ branches, types }: { branches: Branches[], types: Types[] }) {
   const initialState: CustomerState = { message: null, errors: {} };
   const [state, formAction] = useActionState(createCustomer, initialState);
+  const [customerCode, setCustomerCode] = useState<string>('');
+
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState("");
+
+
+
+  useEffect(() => {
+    if (!customerCode) return;
+
+    const timer = setTimeout(() => {
+      fetch(`/api/customers/check-code?code=${customerCode}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.exists) {
+            setError("Customer code already exists");
+          } else {
+            setError("");
+          }
+        });
+    }, 500); // avoid spam
+
+    return () => clearTimeout(timer);
+  }, [customerCode]);
+
+
+
+
+
   // const [updateState, formUpdateAction] = useActionState(
   //   updateSubmissionStatus,
   //   initialStateStatusUpdate
@@ -103,6 +133,15 @@ export default function Form({ branches }: { branches: Branches[] }) {
   };
 
   const handleBranchesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = event.target.value;
+
+    // setSelectedDocument(selectedValue);
+    // setSelectedDocumentId(event.target.value);
+
+  };
+
+
+  const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = event.target.value;
 
     // setSelectedDocument(selectedValue);
@@ -222,30 +261,33 @@ export default function Form({ branches }: { branches: Branches[] }) {
                   placeholder="Enter customer code"
                   className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                   aria-describedby="cust-code-error"
-                  value={formValues.cust_code}
-                  onChange={(e) =>
-                    setFormValues(prev => ({ ...prev, cust_code: e.target.value }))
-                  }
+                  value={customerCode}
+                  onChange={(e) => setCustomerCode(e.target.value)}
+                // onChange={(e) =>
+                //   setFormValues(prev => ({ ...prev, cust_code: e.target.value }))
+                // }
                 // disabled={isFirstFormEnabled}
                 />
                 {/* <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" /> */}
               </div>
             </div>
             <div id="mobile-error" aria-live="polite" aria-atomic="true">
+              <p className="mt-2 text-sm text-red-500" key={error}>
+                {error}
+              </p>
+
               {/* error handleg */}
             </div>
           </div>
 
           <div className="mb-4">
-
             <label htmlFor="customer" className="mb-2 block text-sm font-medium">
               Branch
-
             </label>
             <div className="relative">
               <select
                 id="branch_id"
-                name="branch_id"
+                name="branch"
                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 defaultValue=""
                 aria-describedby="document-error"
@@ -258,6 +300,43 @@ export default function Form({ branches }: { branches: Branches[] }) {
                 {branches.map((branch) => (
                   <option key={branch.id} value={branch.id}>
                     {branch.branch}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div id="document-error" aria-live="polite" aria-atomic="true">
+              {state.errors?.branch_id &&
+                state.errors.branch_id.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+
+            <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+              Type
+
+            </label>
+            <div className="relative">
+              <select
+                id="type_id"
+                name="type"
+                className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                defaultValue=""
+                aria-describedby="type-error"
+                onChange={handleTypeChange}
+              // disabled={isDropDownEnabled}
+              >
+                <option value="" disabled>
+                  Select a Type
+                </option>
+                {types.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.type}
                   </option>
                 ))}
               </select>
@@ -315,7 +394,7 @@ export default function Form({ branches }: { branches: Branches[] }) {
 
           <div className="mb-4">
             <label htmlFor="log" className="mb-2 block text-sm font-medium">
-              Profile Image
+              Logo Image
             </label>
             <ProfileImageUploader
               // currentImageUrl="/uploads/profiles/existing.jpg" // optional

@@ -56,6 +56,16 @@ export type Branches = {
   company: string;
   is_valid: boolean;
 }
+
+export type Types = {
+  id: number;
+  type: string;
+  // branch_code: string;
+  branch_id: string;
+  branch: string;
+  // company: string;
+  is_valid: boolean;
+}
 export type Company = {
   id: number;
   company: string;
@@ -100,8 +110,7 @@ export type InvoicesTable = {
   email: string;
   image_url: string;
   date: string;
-  // amount: number;
-  // status: 'pending' | 'paid';
+
 };
 
 export type CustomersTableType = {
@@ -111,12 +120,24 @@ export type CustomersTableType = {
   image_url: string;
   mobile: string;
   loc_link: string;
-  // total_invoices: number;
-  // total_pending: number;
-  // total_paid: number;
+
 };
 
+export type FinalCustTableTypeWithSubmission = {
+  submission_id: string,
+  status: string,
+  customer_id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_mobile: string;
+  loc_link: string;
+  role_slug: string;       // 👈 add
+  role_name: string;
+  image_url: string;
+  cust_code: string;
+  is_valid: boolean;
 
+};
 
 export type CustTableTypeWithSubmission = {
   submission_id: string,
@@ -173,5 +194,17 @@ export type ActivityHistory = {
   action: string;
   page: string;
   created_at: string;
+}
+
+export type Reports = {
+  submission_id: string
+  status: string,
+  admin_note?: string;
+  manager_note?: string;
+  customer_id: string;
+  customer_name: string;
+  cust_code: string;
+  document_name: string;
+
 }
 

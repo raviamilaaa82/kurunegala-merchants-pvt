@@ -1,6 +1,6 @@
 import Form from '@/app/ui/customers/edit-form';
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchCustomerBySubmissionId, fetchdBranches } from '@/app/lib/data';
+import { fetchCustomerBySubmissionId, fetchdBranches, fetchTypes } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 
 
@@ -17,6 +17,7 @@ export default async function Page(props: {
 
     const customer = await fetchCustomerBySubmissionId(submissionId ?? null);
     const branches = await fetchdBranches();
+    const types = await fetchTypes();
 
     if (!customer) {
         notFound();
@@ -35,7 +36,7 @@ export default async function Page(props: {
                 ]}
             />
 
-            <Form customer={customer} submisnId={submissionId} branches={branches} />
+            <Form customer={customer} submisnId={submissionId} branches={branches} types={types} />
         </main>
     );
 }

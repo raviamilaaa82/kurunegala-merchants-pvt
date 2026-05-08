@@ -7,7 +7,7 @@ import {
 } from '@/app/lib/definitions';
 import { fetchFilteredBranch } from '@/app/lib/data';
 import { DisableBranch } from '@/app/ui/branches/buttons';
-
+import { Badge } from "@/components/ui/badge";
 
 export default async function BranchesTable({
   query,
@@ -52,11 +52,20 @@ export default async function BranchesTable({
                           </div>
                         </div>
                         <p className="text-sm text-gray-500">
+
                           {branch.is_valid ? (
+                            <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">✓ Valid</Badge>
+
+                          ) : (
+
+                            <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">✗ Invalid</Badge>
+                          )}
+
+                          {/* {branch.is_valid ? (
                             <span className="text-green-600">✓ Valid</span>
                           ) : (
                             <span className="text-red-600">✗ Invalid</span>
-                          )}
+                          )} */}
                         </p>
                       </div>
                     </div>
@@ -116,10 +125,17 @@ export default async function BranchesTable({
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         {branch.is_valid ? (
+                          <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">✓ Valid</Badge>
+
+                        ) : (
+
+                          <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">✗ Invalid</Badge>
+                        )}
+                        {/* {branch.is_valid ? (
                           <span className="text-green-600">✓ Valid</span>
                         ) : (
                           <span className="text-red-600">✗ Invalid</span>
-                        )}
+                        )} */}
                       </td>
 
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
