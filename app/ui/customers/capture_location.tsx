@@ -18,8 +18,9 @@ export default function CaptureLocationButton({ onLocationCaptured }: Props) {
         try {
             const { lat, lng } = await getLocation();
             setCoords({ lat, lng });
-            // Assuming lat and lan (longitude) are available from your form or database
-            const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            // Assuming lat and lan (longitude) are available from your form or database   
+            // const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            const googleMapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
             onLocationCaptured(googleMapsLink);
 
         } catch (err) {

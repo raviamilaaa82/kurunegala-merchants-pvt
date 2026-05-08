@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 import { CustomerState, updateCustomer } from '@/app/lib/actions';
-import { useActionState, useState, } from 'react';
+import { useActionState, useEffect, useState, } from 'react';
 
 import CaptureLocationButton from './capture_location';
 
@@ -27,28 +27,72 @@ type CustomerErrors = {
 
 
 export default function Form({ customer, submisnId, branches, types }: { customer: any, submisnId?: string, branches: Branches[], types: Types[] }) {
-    const initialState: CustomerState = { message: null, errors: {} };
+    const initialState: CustomerState = { status: null, errors: {}, message: null, error: null };
     const updateCustomerWithId = updateCustomer.bind(null, customer.customer_id, submisnId);
     const [state, formAction] = useActionState(updateCustomerWithId, initialState);
 
     const [googleLink, setGoogleLink] = useState(customer.loc_link);
-    const [localErrors, setLocalErrors] = useState<CustomerErrors>({});
+    // const [localErrors, setLocalErrors] = useState<CustomerErrors>({});
+    const [localErrors, setLocalErrors] = useState<Record<string, string[]>>({});
     // const [customerId, setCustomerId] = useState<string>('100');
-    const [custName, setCustName] = useState<string | null>(null);
+    const [custName, setCustName] = useState<string>(customer.customer_name || '');
+    const [customerCode, setCustomerCode] = useState<string>(customer.cust_code || '');
     const [submissionId, setSubmissionId] = useState<number | null>(null);//setting submissionid
     const [lat, setLat] = useState<number | null>(null);
     const [lng, setLng] = useState<number | null>(null);
     const [profileImgUrl, setProfileImgUrl] = useState<string>(customer.image_url);
-
+    const [selectedBranchId, setSelectedBranchId] = useState<string>(customer.branch_id || '');
+    const [selectedTypeId, setSelectedTypeId] = useState<string>(customer.type_id || '');
+    const [error, setError] = useState("");
     const router = useRouter();
 
-    const clearError = (field: keyof CustomerErrors) => {
+
+
+
+
+    useEffect(() => {
+        if (!customerCode) return;
+
+        const timer = setTimeout(() => {
+            fetch(`/api/customers/check-code?code=${customerCode}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.exists) {
+                        setError("Customer code already exists");
+                    } else {
+                        setError("");
+                    }
+                });
+        }, 500); // avoid spam
+
+        return () => clearTimeout(timer);
+    }, [customerCode]);
+
+
+
+
+
+    useEffect(() => {
+        if (state.status === 'error' && state.errors) {
+            setLocalErrors(state.errors);
+        }
+    }, [state.status, state.errors]);
+
+
+    const clearFieldError = (fieldName: string) => {
         setLocalErrors(prev => {
-            const updated = { ...prev };
-            delete updated[field];
-            return updated;
+            const newErrors = { ...prev };
+            delete newErrors[fieldName];  // removes ONLY that field
+            return newErrors;
         });
     };
+    // const clearError = (field: keyof CustomerErrors) => {
+    //     setLocalErrors(prev => {
+    //         const updated = { ...prev };
+    //         delete updated[field];
+    //         return updated;
+    //     });
+    // };
 
 
     const handleLocationSelect = (
@@ -71,7 +115,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
         setGoogleLink("");
         setSubmissionId(null);
         // setCustomerId(null);
-        setCustName(null);
+        setCustName('');
 
     };
 
@@ -90,6 +134,8 @@ export default function Form({ customer, submisnId, branches, types }: { custome
         // setSelectedDocumentId(event.target.value);
 
     };
+
+
 
     return (
         <>
@@ -110,7 +156,13 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                                     placeholder="Enter customer name"
                                     className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                                     aria-describedby="name-error"
-                                    defaultValue={customer.customer_name}
+                                    // defaultValue={customer.customer_name}
+                                    value={custName}
+                                    onChange={(e) => {
+                                        setCustName(e.target.value);
+                                        // setFormValues(prev => ({ ...prev, name: e.target.value }));
+                                        clearFieldError('name');
+                                    }}
 
                                 />
                                 {/* <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" /> */}
@@ -192,18 +244,26 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                                     placeholder="Enter customer code"
                                     className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                                     aria-describedby="cust-code-error"
-                                    // value={formValues.cust_code}
-                                    defaultValue={customer.cust_code}
-                                // onChange={(e) =>
-                                //     setFormValues(prev => ({ ...prev, cust_code: e.target.value }))
-                                // }
-                                // disabled={isFirstFormEnabled}
+                                    value={customerCode}
+                                    onChange={(e) => {
+                                        setCustomerCode(e.target.value)
+                                        clearFieldError('cust_code');
+                                    }}
+
                                 />
                                 {/* <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" /> */}
                             </div>
                         </div>
-                        <div id="mobile-error" aria-live="polite" aria-atomic="true">
-                            {/* error handleg */}
+                        <div id="cust-code-error" aria-live="polite" aria-atomic="true">
+                            {localErrors?.cust_code &&
+                                localErrors?.cust_code.map((error: string) => (
+                                    <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                    </p>
+                                ))}
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                                {error}
+                            </p>
                         </div>
                     </div>
 
@@ -219,9 +279,15 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                                 name="branch_id"
                                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
 
-                                aria-describedby="document-error"
-                                defaultValue={customer.branch_id}
-                                onChange={handleBranchesChange}
+                                aria-describedby="brach-error"
+                                value={selectedBranchId}
+                                // defaultValue={customer.branch_id}
+                                // onChange={handleBranchesChange}
+                                onChange={(e) => {
+                                    setSelectedBranchId(e.target.value);
+                                    handleBranchesChange(e); // Your existing handler
+                                    clearFieldError('branch_id');
+                                }}
 
                             // disabled={isDropDownEnabled}
                             >
@@ -236,13 +302,20 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                             </select>
                         </div>
 
-                        <div id="document-error" aria-live="polite" aria-atomic="true">
+                        <div id="brach-error" aria-live="polite" aria-atomic="true">
                             {/* {state.errors?.branch_id &&
                                 state.errors.branch_id.map((error: string) => (
                                     <p className="mt-2 text-sm text-red-500" key={error}>
                                         {error}
                                     </p>
                                 ))} */}
+
+                            {localErrors?.branch_id &&
+                                localErrors?.branch_id.map((error: string) => (
+                                    <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                    </p>
+                                ))}
                         </div>
                     </div>
 
@@ -260,9 +333,16 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
 
                                 aria-describedby="type-error"
-                                defaultValue={customer.type_id}
-                                onChange={handleTypeChange}
-                            // disabled={isDropDownEnabled}
+                                value={selectedTypeId}
+                                // defaultValue={customer.type_id}
+                                // onChange={handleTypeChange}
+                                // disabled={isDropDownEnabled}
+
+                                onChange={(e) => {
+                                    setSelectedTypeId(e.target.value);
+                                    handleTypeChange(e); // Your existing handler
+                                    clearFieldError('type_id');
+                                }}
                             >
                                 <option value="" disabled>
                                     Select a Type
@@ -275,7 +355,14 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                             </select>
                         </div>
 
-                        <div id="document-error" aria-live="polite" aria-atomic="true">
+                        <div id="type-error" aria-live="polite" aria-atomic="true">
+
+                            {localErrors?.type &&
+                                localErrors?.type.map((error: string) => (
+                                    <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                    </p>
+                                ))}
                             {/* {state.errors?.branch_id &&
                 state.errors.branch_id.map((error: string) => (
                   <p className="mt-2 text-sm text-red-500" key={error}>
@@ -312,10 +399,13 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                     <div className="mb-4">
                         <input type="hidden" name="lat" value={lat ?? ''} />
                         <input type="hidden" name="lng" value={lng ?? ''} />
-                        {/* <input type="hidden" name="googleLink" value={googleLink} /> */}
 
-                        {/* map picker */}
-                        <MapPicker onLocationSelect={handleLocationSelect} />
+                        {/* newly added on */}
+                        <MapPicker
+                            onLocationSelect={handleLocationSelect}
+                            initialLink={customer.loc_link ?? undefined} // ✅ from db
+                        />
+                        {/* <MapPicker onLocationSelect={handleLocationSelect} /> */}
 
                         {googleLink && (
                             <a href={googleLink} target="_blank" className="text-blue-600 text-sm">

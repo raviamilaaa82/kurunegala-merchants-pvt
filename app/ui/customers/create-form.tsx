@@ -11,20 +11,44 @@ import MapPicker from './map-picker';
 import ProfileImageUploader from './profile-image-uploader';
 import { error } from 'console';
 
-type CustomerErrors = {
-  name?: string[];
-  uploadedFilesByDocument?: string[];
-};
+// type CustomerErrors = {
+//   name?: string[];
+//   uploadedFilesByDocument?: string[];
+// };
 
 
 
 export default function Form({ branches, types }: { branches: Branches[], types: Types[] }) {
-  const initialState: CustomerState = { message: null, errors: {} };
+  const initialState: CustomerState = { status: null, errors: {}, message: null, error: null };
   const [state, formAction] = useActionState(createCustomer, initialState);
   const [customerCode, setCustomerCode] = useState<string>('');
 
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
+  // const [localErrors, setLocalErrors] = useState<{ name?: string[]; email?: string[] } | null>(null);
+  const [localErrors, setLocalErrors] = useState<Record<string, string[]>>({});
+  const [googleLink, setGoogleLink] = useState("");
+  // const [localErrors, setLocalErrors] = useState<CustomerErrors>({});
+  const [customerId, setCustomerId] = useState<string>('100');
+  const [custName, setCustName] = useState<string | null>(null);
+  const [submissionId, setSubmissionId] = useState<number | null>(null);//setting submissionid
+
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [profileImgUrl, setProfileImgUrl] = useState<string>('');
+
+
+
+  const router = useRouter();
+
+
+
+  useEffect(() => {
+    if (state.status === 'error' && state.errors) {
+      setLocalErrors(state.errors);
+    }
+  }, [state.status, state.errors]);
+
 
 
 
@@ -47,7 +71,13 @@ export default function Form({ branches, types }: { branches: Branches[], types:
   }, [customerCode]);
 
 
-
+  const clearFieldError = (fieldName: string) => {
+    setLocalErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];  // removes ONLY that field
+      return newErrors;
+    });
+  };
 
 
   // const [updateState, formUpdateAction] = useActionState(
@@ -70,19 +100,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
 
 
 
-  const [googleLink, setGoogleLink] = useState("");
-  const [localErrors, setLocalErrors] = useState<CustomerErrors>({});
-  const [customerId, setCustomerId] = useState<string>('100');
-  const [custName, setCustName] = useState<string | null>(null);
-  const [submissionId, setSubmissionId] = useState<number | null>(null);//setting submissionid
 
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
-  const [profileImgUrl, setProfileImgUrl] = useState<string>('');
-
-
-
-  const router = useRouter();
 
 
 
@@ -99,13 +117,13 @@ export default function Form({ branches, types }: { branches: Branches[], types:
 
 
 
-  const clearError = (field: keyof CustomerErrors) => {
-    setLocalErrors(prev => {
-      const updated = { ...prev };
-      delete updated[field];
-      return updated;
-    });
-  };
+  // const clearError = (field: keyof CustomerErrors) => {
+  //   setLocalErrors(prev => {
+  //     const updated = { ...prev };
+  //     delete updated[field];
+  //     return updated;
+  //   });
+  // };
 
 
 
@@ -138,12 +156,15 @@ export default function Form({ branches, types }: { branches: Branches[], types:
     // setSelectedDocument(selectedValue);
     // setSelectedDocumentId(event.target.value);
 
+    clearFieldError('branch_id');
+
+
   };
 
 
   const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = event.target.value;
-
+    clearFieldError('type');
     // setSelectedDocument(selectedValue);
     // setSelectedDocumentId(event.target.value);
 
@@ -172,7 +193,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                   value={formValues.name}
                   onChange={(e) => {
                     setFormValues(prev => ({ ...prev, name: e.target.value }));
-                    clearError("name");
+                    clearFieldError('name');
                   }}
                 // disabled={isFirstFormEnabled}
                 />
@@ -205,6 +226,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                   value={formValues.email}
                   onChange={(e) =>
                     setFormValues(prev => ({ ...prev, email: e.target.value }))
+
                   }
                 // disabled={isFirstFormEnabled}
                 />
@@ -262,7 +284,11 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                   className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                   aria-describedby="cust-code-error"
                   value={customerCode}
-                  onChange={(e) => setCustomerCode(e.target.value)}
+                  onChange={(e) => {
+                    setCustomerCode(e.target.value)
+                    clearFieldError('cust_code');
+                  }
+                  }
                 // onChange={(e) =>
                 //   setFormValues(prev => ({ ...prev, cust_code: e.target.value }))
                 // }
@@ -271,12 +297,18 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                 {/* <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" /> */}
               </div>
             </div>
-            <div id="mobile-error" aria-live="polite" aria-atomic="true">
+            <div id="cust-code-error" aria-live="polite" aria-atomic="true">
+              {localErrors?.cust_code &&
+                localErrors?.cust_code.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
               <p className="mt-2 text-sm text-red-500" key={error}>
                 {error}
               </p>
-
-              {/* error handleg */}
+              {/*
+              error handleg */}
             </div>
           </div>
 
@@ -290,7 +322,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                 name="branch"
                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 defaultValue=""
-                aria-describedby="document-error"
+                aria-describedby="branch-error"
                 onChange={handleBranchesChange}
               // disabled={isDropDownEnabled}
               >
@@ -305,9 +337,15 @@ export default function Form({ branches, types }: { branches: Branches[], types:
               </select>
             </div>
 
-            <div id="document-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.branch_id &&
+            <div id="branch-error" aria-live="polite" aria-atomic="true">
+              {/* {state.errors?.branch_id &&
                 state.errors.branch_id.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))} */}
+              {localErrors?.branch_id &&
+                localErrors?.branch_id.map((error: string) => (
                   <p className="mt-2 text-sm text-red-500" key={error}>
                     {error}
                   </p>
@@ -343,12 +381,20 @@ export default function Form({ branches, types }: { branches: Branches[], types:
             </div>
 
             <div id="document-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.branch_id &&
-                state.errors.branch_id.map((error: string) => (
+              {/* {state.errors?.type &&
+                state.errors.type.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))} */}
+
+              {localErrors?.type &&
+                localErrors?.type.map((error: string) => (
                   <p className="mt-2 text-sm text-red-500" key={error}>
                     {error}
                   </p>
                 ))}
+
             </div>
           </div>
 

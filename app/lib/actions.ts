@@ -73,6 +73,7 @@ const CustomerSchema = z.object({
     type: z.coerce
         .number()
         .gt(0, { message: 'Type ID is empty!' }),
+    cust_code: z.string({ invalid_type_error: 'Please enter customer code' }).min(1, 'Customer code cannot be empty'),
 
 
 });
@@ -87,6 +88,7 @@ const CustomerUpdateSchema = z.object({
     type: z.coerce
         .number()
         .gt(0, { message: 'Type ID is empty!' }),
+    cust_code: z.string({ invalid_type_error: 'Please enter customer code' }).min(1, 'Customer code cannot be empty'),
 
 });
 
@@ -209,13 +211,28 @@ export type CustomerSuccessResponse = {
     name: string;
 };
 
+// export type CustomerState = {
+//     status?: "success" | "error" | null;
+//     errors?: {
+//         name?: string[];
+//         branch_id?: string[];
+//         type?: string[];
+//         cust_code?: string[];
+//     };
+//     message?: string | null;
+
+//     error?: string | null;
+// }
 export type CustomerState = {
+    status?: "success" | "error" | null;
     errors?: {
         name?: string[];
         branch_id?: string[];
         type?: string[];
+        cust_code?: string[];
     };
     message?: string | null;
+    error?: string | null;
 }
 
 export type UserState = {
@@ -403,7 +420,7 @@ export async function updateDocument(id: string, prevState: DocumentState, formD
 }
 
 
-export async function createCustomer(prevState: CustomerState | undefined, formData: FormData) {
+export async function createCustomer(prevState: CustomerState, formData: FormData): Promise<CustomerState> {
 
     const session = await auth();
     if (!session?.user?.id) {
@@ -423,23 +440,34 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
         name: formData.get('name'),
         branch_id: formData.get('branch'),
         type: formData.get('type'),
+        cust_code: formData.get('cust_code'),
     });
 
     if (!validatedFields.success) {
+        // return {
+        //     status: 'error',
+        //     message: 'Missing or invalid fields. Failed to create customer.',
+        //     error: 'Failed to create customer',
+        //     errors: validatedFields.error.flatten().fieldErrors,
+        //     // { name?: string[] }
+        // };
+
         return {
-            status: 'error',
+            status: 'error' as const,  // ✅ as const
             message: 'Missing or invalid fields. Failed to create customer.',
-            errors: validatedFields.error.flatten().fieldErrors, // { name?: string[] }
-        };
+            error: null,
+            errors: validatedFields.error.flatten().fieldErrors,
+        } satisfies CustomerState;
+
 
     }
 
-    const { name, branch_id, type } = validatedFields.data;
+    const { name, branch_id, type, cust_code } = validatedFields.data;
     const email = String(formData.get('email') ?? '');
     const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');
     const locationLink = String(formData.get('googleLink') ?? '0');
-    const customer_code = String(formData.get('cust_code') ?? '');
+    // const customer_code = String(formData.get('cust_code') ?? '');
 
 
     let customerId: string;
@@ -451,7 +479,7 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
             const [customer] = await txn`
             
                 INSERT INTO customers (name, email, image_url, mobile, loc_link,cust_code,branch_id,type_id)
-                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink},${customer_code},${branch_id},${type})
+                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink},${cust_code},${branch_id},${type})
                 RETURNING id
             `;
 
@@ -470,7 +498,13 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
 
     } catch (error) {
         console.error('Transaction failed:', error);
-        return { error: 'Failed to create customer' };
+        // return { error: 'Failed to create customer' };
+        return {
+            status: 'error' as const,
+            message: 'Failed to create customer',
+            error: 'Failed to create customer',
+            errors: {},
+        } satisfies CustomerState;
     }
 
 
@@ -478,48 +512,63 @@ export async function createCustomer(prevState: CustomerState | undefined, formD
 }
 
 
-export async function updateCustomer(id: string, submisnId: string | undefined, prevState: CustomerState | undefined, formData: FormData) {
+export async function updateCustomer(id: string, submisnId: string | undefined, prevState: CustomerState, formData: FormData): Promise<CustomerState> {
     const validatedFields = UpdateCustomer.safeParse({
         name: formData.get('name'),
         branch_id: formData.get('branch_id'),
         type: formData.get('type'),
+        cust_code: formData.get('cust_code'),
 
     });
-    console.log("type");
-    console.log("submisnId");
-    console.log(submisnId);
+
     if (!validatedFields.success) {
 
         return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to create customer.',
+            error: null,
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Update User',
-        };
+        } satisfies CustomerState;
     }
 
 
     const { name, branch_id, type } = validatedFields.data;
-    console.log("type");
-    console.log(type);
+
     const email = String(formData.get('email') ?? '');
     const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');
     const locationLink = String(formData.get('googleLink') ?? '0');
     const customer_code = String(formData.get('cust_code') ?? '');
 
+    try {
 
-
-    await sql`
+        await sql`
         UPDATE customers
 	SET  name=${name}, email=${email}, image_url=${img_url}, mobile=${mobile}, loc_link=${locationLink},
     cust_code=${customer_code}, branch_id=${branch_id},type_id=${type}
 	
 	WHERE id = ${id}   
   `;
-
+    } catch (error) {
+        console.error('Transaction failed:', error);
+        // return { error: 'Failed to create customer' };
+        return {
+            status: 'error' as const,
+            message: 'Failed to create customer',
+            error: 'Failed to create customer',
+            errors: {},
+        } satisfies CustomerState;
+    }
     if (submisnId) {
 
         redirect(`/dashboard/customers/${id}/upload?submissionId=${submisnId}&name=${encodeURIComponent(name)}&mode=edit`);
     }
+    return {
+        status: 'success' as const,
+        message: 'Customer updated successfully',
+        error: null,
+        errors: {},
+    } satisfies CustomerState;
 
 }
 

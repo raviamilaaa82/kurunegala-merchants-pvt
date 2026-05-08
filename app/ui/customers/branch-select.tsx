@@ -2,35 +2,41 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Branches } from '@/app/lib/definitions';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 
 export default function BranchDropDowns({ branches }: { branches: Branches[] }) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const currentBranch = searchParams.get('branch') || '';
+    const currentBranch = searchParams.get('branch') || 'all';
+    // const searchParamsRef = useRef(searchParams);
 
-
+    // const handleBranchChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    //     const params = new URLSearchParams(searchParams.toString());
+    //     if (event.target.value) {
+    //         params.set('branch', event.target.value);
+    //     } else {
+    //         params.delete('branch');
+    //     }
+    //     params.set('page', '1');
+    //     router.push(`/dashboard/customers?${params.toString()}`);
+    // };
     const handleBranchChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const params = new URLSearchParams(searchParams.toString());
-        if (event.target.value) {
-            params.set('branch', event.target.value);
-        } else {
-            params.delete('branch');
-        }
+        params.set('branch', event.target.value);
         params.set('page', '1');
         router.push(`/dashboard/customers?${params.toString()}`);
     };
 
 
-    useEffect(() => {
-        if (!searchParams.has('branch') && branches.length > 0) {
-            const params = new URLSearchParams(searchParams.toString());
-            params.set('branch', String(branches[0].id)); // 👈 use first branch as default
-            // params.set('page', '1');
-            router.replace(`/dashboard/customers?${params.toString()}`); // 👈 replace not push (no back-button history)
-        }
-    }, []); // 👈 run when branches load
+    // useEffect(() => {
+    //     if (!searchParamsRef.current.has('branch') && branches.length > 0) {
+    //         const params = new URLSearchParams(searchParamsRef.current.toString());
+    //         params.set('branch', String(branches[0].id)); // 👈 use first branch as default
+    //         // params.set('page', '1');
+    //         router.replace(`/dashboard/customers?${params.toString()}`); // 👈 replace not push (no back-button history)
+    //     }
+    // }, []); // 👈 run when branches load
 
     return (
         <div className="flex w-full">

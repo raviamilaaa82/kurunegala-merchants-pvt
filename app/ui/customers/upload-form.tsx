@@ -1,7 +1,7 @@
 'use client';
 
 import { CustomerField, Documents } from '@/app/lib/definitions';
-import { deleteDocumentByUser, updateSubmissionStatus, SubmissionState } from '@/app/lib/actions';
+import { deleteDocumentByUser, updateSubmissionStatus, SubmissionState, } from '@/app/lib/actions';
 import { useActionState, useState, useEffect, useRef, useCallback } from 'react';
 import FileUploadProgress from "@/components/file-upload-progress-1";
 import Lightbox from "yet-another-react-lightbox";
@@ -23,6 +23,8 @@ type CustomerErrors = {
 const initialStateStatusUpdate: SubmissionState = { message: null, errors: {} };
 
 export default function UploadForm({ documents, customerId, subminId, name, existingImages = [], roleSlug }: { documents: Documents[], customerId: string, subminId?: string, name: string, existingImages?: any[], roleSlug?: string }) {
+
+
     const [updateState, formUpdateAction] = useActionState(
         updateSubmissionStatus,
         initialStateStatusUpdate
@@ -197,7 +199,7 @@ export default function UploadForm({ documents, customerId, subminId, name, exis
             <div className="rounded-md bg-gray-50 p-4 md:p-6">
 
                 <div className="mb-4">
-                    <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+                    <label htmlFor="customer" className="mb-2 block text-sm font-medium text-center bg-white">
                         {name}
 
                     </label>
