@@ -11,10 +11,7 @@ import MapPicker from './map-picker';
 import ProfileImageUploader from './profile-image-uploader';
 import { error } from 'console';
 
-// type CustomerErrors = {
-//   name?: string[];
-//   uploadedFilesByDocument?: string[];
-// };
+
 
 
 
@@ -83,16 +80,6 @@ export default function Form({ branches, types }: { branches: Branches[], types:
   };
 
 
-  // const [updateState, formUpdateAction] = useActionState(
-  //   updateSubmissionStatus,
-  //   initialStateStatusUpdate
-  // );
-  // const [state, formAction, isPending] = useActionState(
-  //   createCustomer,
-  //   initialState
-  // );
-
-
   const [formValues, setFormValues] = useState({
     name: "",
     email: "",
@@ -111,18 +98,6 @@ export default function Form({ branches, types }: { branches: Branches[], types:
     setLng(coords.lng);
     setGoogleLink(link);
   };
-
-
-
-  // const clearError = (field: keyof CustomerErrors) => {
-  //   setLocalErrors(prev => {
-  //     const updated = { ...prev };
-  //     delete updated[field];
-  //     return updated;
-  //   });
-  // };
-
-
 
   //for button
   const getGeoLocation = (googleMapsLink: string) => {

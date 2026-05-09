@@ -178,18 +178,22 @@ export type State = {
 }
 
 export type DocumentState = {
+    status?: "success" | "error" | null;
     errors?: {
         document?: string[]
     };
     message?: string | null;
+    error?: string | null;
 }
 
 export type BranchState = {
+    status?: "success" | "error" | null;
     errors?: {
         branch?: string[];
         company?: string[];
     };
     message?: string | null;
+    error?: string | null;
 }
 
 export type TypeState = {
@@ -211,18 +215,7 @@ export type CustomerSuccessResponse = {
     name: string;
 };
 
-// export type CustomerState = {
-//     status?: "success" | "error" | null;
-//     errors?: {
-//         name?: string[];
-//         branch_id?: string[];
-//         type?: string[];
-//         cust_code?: string[];
-//     };
-//     message?: string | null;
 
-//     error?: string | null;
-// }
 export type CustomerState = {
     status?: "success" | "error" | null;
     errors?: {
@@ -236,12 +229,15 @@ export type CustomerState = {
 }
 
 export type UserState = {
+    status?: "success" | "error" | null;
     errors?: {
         name?: string[];
         password?: string[];
         username?: string[];
     };
     message?: string | null;
+    error?: string | null;
+
 }
 
 export type UserUpdateState = {
@@ -253,11 +249,13 @@ export type UserUpdateState = {
 };
 
 export type RoleState = {
+    status?: "success" | "error" | null;
     errors?: {
         role?: string[];
         slug?: string[];
     };
     message?: string | null;
+    error?: string | null;
 }
 
 export type SubmissionState = {
@@ -352,16 +350,23 @@ export async function deleteInvoice(id: string) {
 }
 
 
-export async function createDocument(prevState: DocumentState, formData: FormData) {
+export async function createDocument(prevState: DocumentState, formData: FormData): Promise<DocumentState> {
     const validatedFields = CreateDocument.safeParse({
         document: formData.get('document'),
     });
 
     if (!validatedFields.success) {
+        // return {
+        //     errors: validatedFields.error.flatten().fieldErrors,
+        //     message: 'Missing Fields. Failed to Create Document',
+        // };
+
         return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to create document.',
+            error: null,
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Create Document',
-        };
+        } satisfies DocumentState;
     }
 
     const { document } = validatedFields.data;
@@ -374,10 +379,13 @@ export async function createDocument(prevState: DocumentState, formData: FormDat
   `;
     } catch (error) {
 
-        console.error(error);
-        // return {
-        //     message: 'Database Error: Failed to Create Invoice.',
-        // };
+        // console.error(error);
+        return {
+            status: 'error' as const,
+            message: 'Failed to create document',
+            error: 'Failed to create document',
+            errors: {},
+        } satisfies DocumentState;
     }
     revalidatePath('/dashboard/documents');
     redirect('/dashboard/documents');
@@ -702,7 +710,7 @@ export async function updateManagerAndAdminNotes(summissionId: number, prevState
     redirect('/dashboard/customers');
 }
 
-export async function createUser(prevState: UserState, formData: FormData) {
+export async function createUser(prevState: UserState, formData: FormData): Promise<UserState> {
     const validatedFields = CreateUser.safeParse({
         name: formData.get('name'),
         password: formData.get('password'),
@@ -710,10 +718,13 @@ export async function createUser(prevState: UserState, formData: FormData) {
     });
 
     if (!validatedFields.success) {
+
         return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to create user.',
+            error: null,
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Create User',
-        };
+        } satisfies UserState;
     }
 
     const { name, password, username } = validatedFields.data;
@@ -730,10 +741,12 @@ export async function createUser(prevState: UserState, formData: FormData) {
   `;
     } catch (error) {
 
-        console.error(error);
-        // return {
-        //     message: 'Database Error: Failed to Create Invoice.',
-        // };
+        return {
+            status: 'error' as const,
+            message: 'Failed to create user',
+            error: 'Failed to create user',
+            errors: {},
+        } satisfies UserState;
     }
     revalidatePath('/dashboard/users');
     redirect('/dashboard/users');
@@ -789,7 +802,7 @@ export async function updateUser(id: string, prevState: UserUpdateState, formDat
 }
 
 
-export async function createRole(prevState: RoleState, formData: FormData) {
+export async function createRole(prevState: RoleState, formData: FormData): Promise<RoleState> {
 
     const date = new Date();
     const year = date.getFullYear();
@@ -803,10 +816,17 @@ export async function createRole(prevState: RoleState, formData: FormData) {
     });
 
     if (!validatedFields.success) {
+        // return {
+        //     errors: validatedFields.error.flatten().fieldErrors,
+        //     message: 'Missing Fields. Failed to Create Role',
+        // };
+
         return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to create user.',
+            error: null,
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Create Role',
-        };
+        } satisfies RoleState;
     }
 
     const { role, slug } = validatedFields.data;
@@ -820,10 +840,12 @@ export async function createRole(prevState: RoleState, formData: FormData) {
   `;
     } catch (err: unknown) {
 
-        // console.error(error);
         return {
-            message: 'Database Error: Failed to Create a Role.',
-        };
+            status: 'error' as const,
+            message: 'Failed to create role',
+            error: 'Failed to create role',
+            errors: {},
+        } satisfies RoleState;
 
 
     }
@@ -1079,7 +1101,7 @@ export async function disableDocument(id: string, is_valid: boolean) {
     // redirect('/dashboard/documents');
 }
 
-export async function createBranch(prevState: BranchState, formData: FormData) {
+export async function createBranch(prevState: BranchState, formData: FormData): Promise<BranchState> {
 
     const validatedFields = CreateBranch.safeParse({
         branch: formData.get('branch'),
@@ -1088,10 +1110,16 @@ export async function createBranch(prevState: BranchState, formData: FormData) {
 
 
     if (!validatedFields.success) {
+        // return {
+        //     errors: validatedFields.error.flatten().fieldErrors,
+        //     message: 'Missing Fields. Failed to Create Document',
+        // };
         return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to create branch.',
+            error: null,
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Create Document',
-        };
+        } satisfies BranchState;
     }
 
     const { branch, company } = validatedFields.data;
@@ -1104,10 +1132,12 @@ export async function createBranch(prevState: BranchState, formData: FormData) {
   `;
     } catch (error) {
 
-        console.error(error);
-        // return {
-        //     message: 'Database Error: Failed to Create Invoice.',
-        // };
+        return {
+            status: 'error' as const,
+            message: 'Failed to create branch',
+            error: 'Failed to create branch',
+            errors: {},
+        } satisfies BranchState;
     }
     revalidatePath('/dashboard/branches');
     redirect('/dashboard/branches');

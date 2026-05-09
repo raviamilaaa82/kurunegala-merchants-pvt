@@ -80,7 +80,7 @@ export async function fetchAllRoles() {
   return roles;
 }
 
-
+//need to check because no currentPage and offset
 export async function fetchUsersWithRolesPages(query: string) {
   try {
     const data = await sql`SELECT COUNT(*) FROM users u LEFT JOIN roles r ON r.id = u.role_id     
@@ -120,9 +120,27 @@ export async function fetchFilteredUsersWithRoles(query: string) {
     throw new Error('Failed to fetch user table.');
   }
 }
+export async function fetchRoles() {
+  try {
+    const roles = await sql<Role[]>`
+      SELECT
+        id, display_name
+      FROM roles			
+      ORDER BY id ASC
+    `;
+
+    // return roles;
+    return roles;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all roles.');
+  }
+
+}
 
 export async function fetchAllRolesWithTheirPermissions() {
   try {
+
     const roles = await sql<RoleWithPermisson[]>`
         SELECT
           r.id,
@@ -133,9 +151,8 @@ export async function fetchAllRolesWithTheirPermissions() {
         FROM roles r
         LEFT JOIN role_permissions rp ON rp.role_id = r.id
         GROUP BY r.id
-        ORDER BY r.id
+        ORDER BY r.id         
       `;
-    // const roles = rolesResult.rows as Role[];  // ✅ cast here
 
     return roles;
   } catch (err) {
@@ -146,7 +163,17 @@ export async function fetchAllRolesWithTheirPermissions() {
 
 //newly added code
 
+// export async function fetchRolesWithPermissionsPages(query: string,) {
+//   try {
+//     const data = await sql`SELECT COUNT(*) AS total FROM roles`;
 
+//     const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
+//     return totalPages;
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch total number of invoices.');
+//   }
+// }
 
 export async function fetchRevenue() {
   try {
@@ -835,7 +862,7 @@ export async function fetchCustomerById(id: string) {
 
 }
 
-
+//need to check
 export async function fetchFilteredUsers(query: string) {
   try {
     const data = await sql<User[]>`
@@ -888,57 +915,51 @@ export async function fetchUserById(id: string) {
 
 }
 
-export async function fetchFilteredRoles(query: string) {
-  try {
-    const data = await sql<Role[]>`
-		SELECT
-    id, role, is_enabled		 
-		FROM tbl_roles		
-		WHERE
-		  role ILIKE ${`%${query}%`} 		
-		ORDER BY id ASC
-	  `;
-
-    return data;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch role table.');
-  }
-}
 
 
 
-export async function fetchRolePages(query: string) {
-  try {
-    const data = await sql`SELECT COUNT(*) AS total FROM tbl_roles WHERE role ILIKE ${`%${query}%`}`;
 
-    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
-    return totalPages;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of users.');
-  }
+// export async function fetchFilteredRoles(query: string) {
+//   try {
+//     const data = await sql<Role[]>`
+// 		SELECT
+//     id, role, is_enabled		 
+// 		FROM tbl_roles		
+// 		WHERE
+// 		  role ILIKE ${`%${query}%`} 		
+// 		ORDER BY id ASC
+// 	  `;
 
-}
+//     return data;
+//   } catch (err) {
+//     console.error('Database Error:', err);
+//     throw new Error('Failed to fetch role table.');
+//   }
+// }
 
 
-export async function fetchRoles() {
-  try {
-    const roles = await sql<Role[]>`
-      SELECT
-        id, display_name
-      FROM roles			
-      ORDER BY id ASC
-    `;
 
-    // return roles;
-    return roles;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch all roles.');
-  }
+// export async function fetchRolePages(query: string) {
+//   try {
+//     const data = await sql`SELECT COUNT(*) AS total FROM roles WHERE role ILIKE ${`%${query}%`}`;
 
-}
+//     const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+//     return totalPages;
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch total number of users.');
+//   }
+
+// }
+
+
+
+
+
+
+
+
+
 
 export async function fetchCompanies() {
   try {

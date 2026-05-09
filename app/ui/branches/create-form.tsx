@@ -4,14 +4,41 @@ import Link from 'next/link';
 
 import { Button } from '@/app/ui/button';
 import { createBranch, BranchState } from '@/app/lib/actions';
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
 
 export default function Form({ companies }: { companies: Company[] }) {
-  const initialState: BranchState = { message: null, errors: {} };
+  const initialState: BranchState = { status: null, errors: {}, message: null, error: null };
+
   const [state, formAction] = useActionState(createBranch, initialState);
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedCompanyId, setSelectedCompnayId] = useState('');
+  const [localErrors, setLocalErrors] = useState<Record<string, string[]>>({});
+  const [localMessage, setLocalMessage] = useState<string | null>(null);
+  const [company, setCompany] = useState<string>('');
+  const [branch, setBranch] = useState<string>('');
+
+
+  useEffect(() => {
+    if (state.status === 'error' && state.errors) {
+      setLocalErrors(state.errors);
+    }
+    if (state.message) {
+      setLocalMessage(state.message);
+    }
+  }, [state.status, state.errors, state.message]);
+
+
+  const clearFieldError = (fieldName: string) => {
+    setLocalErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];  // removes ONLY that field
+      return newErrors;
+    });
+    setLocalMessage(null);
+  };
+
+
 
 
 
@@ -42,9 +69,14 @@ export default function Form({ companies }: { companies: Company[] }) {
               name="company"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               defaultValue=""
-              aria-describedby="document-error"
-              onChange={handleCompanyChange}
-            // disabled={isDropDownEnabled}
+              aria-describedby="company-error"
+              // onChange={handleCompanyChange}
+              onChange={(e) => {
+                handleCompanyChange(e);
+                setCompany(e.target.value)
+                clearFieldError('company');
+              }
+              }
             >
               <option value="" disabled>
                 Select a company
@@ -57,13 +89,13 @@ export default function Form({ companies }: { companies: Company[] }) {
             </select>
           </div>
 
-          <div id="document-error" aria-live="polite" aria-atomic="true">
-            {/* {state.errors?.customerId &&
-              state.errors.customerId.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+          <div id="company-error" aria-live="polite" aria-atomic="true">
+            {localErrors.company &&
+              localErrors.company.map((error: string) => (
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
-              ))} */}
+              ))}
           </div>
         </div>
 
@@ -76,16 +108,21 @@ export default function Form({ companies }: { companies: Company[] }) {
               id="branch"
               name="branch"
               type="text"
-
               placeholder="Enter branch name"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               aria-describedby="branch-error"
+              value={branch}
+              onChange={(e) => {
+                setBranch(e.target.value)
+                clearFieldError('branch');
+              }
+              }
             />
           </div>
 
           <div id="branch-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.branch &&
-              state.errors.branch.map((error: string) => (
+            {localErrors?.branch &&
+              localErrors.branch.map((error: string) => (
                 <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
@@ -95,8 +132,8 @@ export default function Form({ companies }: { companies: Company[] }) {
 
 
       </div>
-      {state.message && (
-        <p className="text-xs text-red-500">{state.message}</p>
+      {localMessage && (
+        <p className="text-xs text-red-500">{localMessage}</p>
       )}
       <div className="mt-6 flex justify-end gap-4">
         <Link

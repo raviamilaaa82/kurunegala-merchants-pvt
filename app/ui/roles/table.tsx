@@ -5,7 +5,7 @@ import {
   CustomersTableType,
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
-import { fetchFilteredRoles, fetchAllRolesWithTheirPermissions } from '@/app/lib/data';
+import { fetchAllRolesWithTheirPermissions } from '@/app/lib/data';
 import { UpdateRole, DisableRole } from './buttons';
 import UserRoleRow from './user-rol-row';
 type RoleWithPermisson = {
@@ -15,17 +15,9 @@ type RoleWithPermisson = {
   permissions: string[] | null;
 };
 
-export default async function RoleTable({
-  query,
-  currentPage
-  // customers,
-}: {
-  query: string,
-  currentPage: number
-  // customers: FormattedCustomersTable[];
-}) {
+export default async function RoleTable() {
 
-  const roles = await fetchFilteredRoles(query);
+  // const roles = await fetchFilteredRoles(query);
   const allRolesWithPermi = await fetchAllRolesWithTheirPermissions();
   return (
     <div className="w-full">
@@ -78,12 +70,6 @@ export default async function RoleTable({
                     <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
                       NAME
                     </th>
-                    {/* <th scope="col" className="px-3 py-5 font-medium">
-                      Role
-                    </th>
-                    <th scope="col" className="px-3 py-5 font-medium">
-                      Validity
-                    </th> */}
 
                   </tr>
                 </thead>
