@@ -707,7 +707,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
     // ── DESKTOP ──
     return (
         <>
-            <tr >
+            <tr className="text-sm font-normal">
                 <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex items-center gap-3">
                         <ImageWithModal
@@ -756,7 +756,10 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
 
                     {submission.cust_code}
                 </td>
+                <td className="bg-white px-4 py-5">
 
+                    {submission.created_at.toLocaleDateString()}
+                </td>
 
                 {/* className="bg-white px-4 py-5" */}
                 <td className="bg-white px-4 py-5">

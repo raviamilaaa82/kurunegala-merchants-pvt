@@ -31,8 +31,7 @@ export default function UploadForm({ documents, customerId, subminId, name, exis
     );
 
     const [submissionId, setSubmissionId] = useState<number | null>(Number(subminId)); //this id setting from fileUploader componente
-    // const [custId, setCustId] = useState<string | null>(customerId);
-    // const [custName, setCustName] = useState<string | null>(null);
+
     const [selectedDocumentId, setSelectedDocumentId] = useState('');
     const [selectedDocument, setSelectedDocument] = useState('');
     const [uploadedFilesByDocument, setUploadedFilesByDocument] = useState<
@@ -46,15 +45,7 @@ export default function UploadForm({ documents, customerId, subminId, name, exis
     const [pdfUrl, setPdfUrl] = useState("");
     const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(true);
     const [localErrors, setLocalErrors] = useState<CustomerErrors>({});
-    //      const keptFilesMapping = Object.entries(uploadedFilesByDocument).map(([docId, files]) => ({
-    //     documentId: docId,
-    //     keys: files.map(f => f.key),
-    //   }));
 
-    //   const deletedFilesMapping = Object.entries(deleteQueueByDocument).map(([docId, keys]) => ({
-    //     documentId: docId,
-    //     keys: keys,
-    //   }));
     const router = useRouter();
     //for submit button enable and disable
     useEffect(() => {
@@ -128,9 +119,7 @@ export default function UploadForm({ documents, customerId, subminId, name, exis
         await new Promise(resolve => setTimeout(resolve, 1000));
         setProcessingDocs(prev => ({ ...prev, [selectedDocumentId]: false }));// this is for showing loading spinner when adding uploaded files to below list
         // setIsSubmitButtonDisabled(false);
-
         clearError("uploadedFilesByDocument"); //clearing error
-
 
     };
     const getDocumentName = (id: string) =>
@@ -154,9 +143,6 @@ export default function UploadForm({ documents, customerId, subminId, name, exis
 
         //final code in here delete from r2 + db both
         await deleteDocumentByUser(key);
-
-
-
         setUploadedFilesByDocument((prev) => {
             const updatedFiles = prev[docId].filter(f => f.key !== key);
 
@@ -206,7 +192,6 @@ export default function UploadForm({ documents, customerId, subminId, name, exis
 
                     <label htmlFor="customer" className="mb-2 block text-sm font-medium">
                         Document type
-
                     </label>
                     <div className="relative">
                         <select

@@ -89,17 +89,17 @@ export default function TableWrapper({ submissions }: { submissions: any[] }) {
             {/* Table */}
             <div className="overflow-x-auto rounded-lg shadow">
                 <table className="w-full text-sm bg-white">
-                    <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                    <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-semibold">
                         <tr>
                             <th className="px-4 py-3"></th>
                             <th className="px-4 py-3 text-left">ID</th>
-                            <th className="px-4 py-3 text-left">Customer</th>
-                            <th className="px-4 py-3 text-left">Code</th>
-                            <th className="px-4 py-3 text-left">Mobile</th>
+                            <th className="px-4 py-3 text-left">CUSTOMER</th>
+                            <th className="px-4 py-3 text-left">CUST. CODE</th>
+                            <th className="px-4 py-3 text-left">MOBILE</th>
                             <th className="px-4 py-3 text-left">Docs</th>
-                            <th className="px-4 py-3 text-left">Status</th>
-                            <th className="px-4 py-3 text-left">Date</th>
-                            <th className="px-4 py-3 text-left">Actions</th>
+                            <th className="px-4 py-3 text-left">STATUS</th>
+                            <th className="px-4 py-3 text-left">DATE</th>
+                            <th className="px-4 py-3 text-left">ACTION</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">

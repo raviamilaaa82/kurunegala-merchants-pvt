@@ -55,11 +55,6 @@ export default function MapPicker({ onLocationSelect, defaultLat = 7.481770, def
     // ✅ Track when map is ready
     const [mapReady, setMapReady] = useState(false);
 
-    console.log('initialLink:', initialLink);
-    console.log('initialCoords:', initialCoords);
-    console.log('mapReady:', mapReady);
-
-
 
     const handleMapClick = useCallback((e: any) => {
         const lat = e.detail.latLng.lat;

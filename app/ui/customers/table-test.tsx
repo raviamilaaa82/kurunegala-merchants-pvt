@@ -56,22 +56,25 @@ export default async function CustomersTable({
                 ))}
               </div>
               <table className="hidden min-w-full rounded-md text-gray-900 md:table">
-                <thead className="rounded-md bg-gray-50 text-left text-sm font-normal">
+                <thead className="rounded-md bg-gray-50 text-left text-xs font-semibold">
                   <tr>
                     <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                      Name
+                      NAME
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Mobile
+                      MOBILE
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Location
+                      LOCATION
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      C.Code
+                      CUST. CODE
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Status
+                      CREATED AT
+                    </th>
+                    <th scope="col" className="px-3 py-5 font-medium">
+                      STATUS
                     </th>
                   </tr>
                 </thead>

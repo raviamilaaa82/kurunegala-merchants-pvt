@@ -449,6 +449,7 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
       s.status,
       s.admin_note,
       s.manager_note,
+      s.created_at,
       c.id AS customer_id,
       c.name AS customer_name,
       c.email AS customer_email,

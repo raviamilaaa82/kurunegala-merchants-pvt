@@ -127,23 +127,21 @@ export default async function UsersClientTable({
                 })}
               </div>
               <table className="hidden min-w-full rounded-md text-gray-900 md:table">
-                <thead className="rounded-md bg-gray-50 text-left text-sm font-normal">
+                <thead className="rounded-md bg-gray-50 text-left text-xs font-semibold">
                   <tr>
                     <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                      User
+                      USER
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Email
+                      EMAIL
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Role
+                      ROLE
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Status
+                      STATUS
                     </th>
-                    {/* <th scope="col" className="px-4 py-5 font-medium">
-                      Total Paid
-                    </th> */}
+
                   </tr>
                 </thead>
 
@@ -179,22 +177,7 @@ export default async function UsersClientTable({
                           ) : (
 
                             <RoleFilter roles={roles} userId={user.id} roleId={user.role_id} />
-                            // <select
-                            //   defaultValue={user.role_id}
-                            //   // disabled={isPending}
-                            //   onChange={(e) =>
-                            //     handleRoleChange(user.id, Number(e.target.value))
-                            //   }
-                            //   className="border rounded px-2 py-1 text-sm bg-white
-                            //        focus:outline-none focus:ring-2 focus:ring-blue-400
-                            //        disabled:opacity-50"
-                            // >
-                            //   {roles.map((role) => (
-                            //     <option key={role.id} value={role.id}>
-                            //       {role.display_name}
-                            //     </option>
-                            //   ))}
-                            // </select>
+
                           )}
                         </td>
                         <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">

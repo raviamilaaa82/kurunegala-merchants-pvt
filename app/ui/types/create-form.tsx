@@ -1,7 +1,6 @@
 'use client';
 import { Branches } from '@/app/lib/definitions';
 import Link from 'next/link';
-
 import { Button } from '@/app/ui/button';
 import { createType, TypeState } from '@/app/lib/actions';
 import { useActionState, useState } from 'react';
@@ -76,7 +75,6 @@ export default function Form({ branches }: { branches: Branches[] }) {
               id="type_id"
               name="type"
               type="text"
-
               placeholder="Enter type name"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               aria-describedby="type-error"
@@ -86,7 +84,7 @@ export default function Form({ branches }: { branches: Branches[] }) {
           <div id="branch-error" aria-live="polite" aria-atomic="true">
             {state.errors?.type &&
               state.errors.type.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}
@@ -96,7 +94,7 @@ export default function Form({ branches }: { branches: Branches[] }) {
 
       </div>
       {state.message && (
-        <p className="text-sm text-red-500">{state.message}</p>
+        <p className="text-xs text-red-500">{state.message}</p>
       )}
       <div className="mt-6 flex justify-end gap-4">
         <Link

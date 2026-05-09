@@ -42,7 +42,7 @@ export default function Form() {
           <div id="document-error" aria-live="polite" aria-atomic="true">
             {state.errors?.document &&
               state.errors.document.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}

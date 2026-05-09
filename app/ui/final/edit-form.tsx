@@ -1,12 +1,7 @@
 'use client';
 
 import { Documents } from '@/app/lib/definitions';
-import {
-  CheckIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
+
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
 import { updateDocument, DocumentState } from '@/app/lib/actions';
@@ -52,7 +47,7 @@ export default function EditDocumentForm({
           <div id="document-error" aria-live="polite" aria-atomic="true">
             {state.errors?.document &&
               state.errors.document.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}
@@ -139,7 +134,7 @@ export default function EditDocumentForm({
 
       </div>
       {state.message && (
-        <p className="text-sm text-red-500">{state.message}</p>
+        <p className="text-xs text-red-500">{state.message}</p>
       )}
       <div className="mt-6 flex justify-end gap-4">
         <Link

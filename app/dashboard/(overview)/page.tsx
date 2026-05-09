@@ -9,13 +9,12 @@ import CardWrapper from '@/app/ui/dashboard/cards';
 import { fetchLatestInvoices, fetchCardData } from '../../lib/data';
 
 export default async function Page() {
-    // const revenue = await fetchRevenue();
-    // const latestInvoices = await fetchLatestInvoices();
-    const { totalPaidInvoices, totalPendingInvoices, numberOfInvoices, numberOfCustomers } = await fetchCardData();
+
+    // const { totalPaidInvoices, totalPendingInvoices, numberOfInvoices, numberOfCustomers } = await fetchCardData();
 
     return (
 
-        <main>
+        <main className="flex-1 overflow-y-auto">
             <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
                 Dashboard
             </h1>

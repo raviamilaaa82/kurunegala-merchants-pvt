@@ -195,15 +195,14 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                     setFormValues(prev => ({ ...prev, name: e.target.value }));
                     clearFieldError('name');
                   }}
-                // disabled={isFirstFormEnabled}
-                />
 
+                />
               </div>
             </div>
             <div id="name-error" aria-live="polite" aria-atomic="true">
               {localErrors?.name &&
                 localErrors?.name.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
+                  <p className="mt-2 text-xs text-red-500" key={error}>
                     {error}
                   </p>
                 ))}
@@ -228,7 +227,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                     setFormValues(prev => ({ ...prev, email: e.target.value }))
 
                   }
-                // disabled={isFirstFormEnabled}
+
                 />
 
               </div>
@@ -300,11 +299,11 @@ export default function Form({ branches, types }: { branches: Branches[], types:
             <div id="cust-code-error" aria-live="polite" aria-atomic="true">
               {localErrors?.cust_code &&
                 localErrors?.cust_code.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
+                  <p className="mt-2 text-xs text-red-500" key={error}>
                     {error}
                   </p>
                 ))}
-              <p className="mt-2 text-sm text-red-500" key={error}>
+              <p className="mt-2 text-xs text-red-500" key={error}>
                 {error}
               </p>
               {/*
@@ -346,7 +345,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                 ))} */}
               {localErrors?.branch_id &&
                 localErrors?.branch_id.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
+                  <p className="mt-2 text-xs text-red-500" key={error}>
                     {error}
                   </p>
                 ))}
@@ -390,7 +389,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
 
               {localErrors?.type &&
                 localErrors?.type.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
+                  <p className="mt-2 text-xs text-red-500" key={error}>
                     {error}
                   </p>
                 ))}

@@ -1,16 +1,10 @@
 'use client';
 import { Role } from '@/app/lib/definitions';
 import Link from 'next/link';
-import {
-  CheckIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 import { createRole, RoleState } from '@/app/lib/actions';
 import { useActionState } from 'react';
-// import FileUploadProgress from "@/components/file-upload-progress-1";
+
 
 
 
@@ -32,7 +26,6 @@ export default function Form() {
               id="role"
               name="role"
               type="text"
-
               placeholder="Enter role name"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               aria-describedby="role-error"
@@ -42,7 +35,7 @@ export default function Form() {
           <div id="role-error" aria-live="polite" aria-atomic="true">
             {state.errors?.role &&
               state.errors.role.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}

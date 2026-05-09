@@ -2,17 +2,14 @@
 import { Role } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
-  CheckIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
   EyeIcon,
   EyeSlashIcon,
-  UserCircleIcon,
+
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 import { createUser, UserState } from '@/app/lib/actions';
 import { useActionState, useState } from 'react';
-// import FileUploadProgress from "@/components/file-upload-progress-1";
+
 
 
 
@@ -45,7 +42,7 @@ export default function Form({ roles }: { roles: Role[] }) {
           <div id="user-error" aria-live="polite" aria-atomic="true">
             {state.errors?.name &&
               state.errors.name.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}
@@ -99,7 +96,7 @@ export default function Form({ roles }: { roles: Role[] }) {
           <div id="username-error" aria-live="polite" aria-atomic="true">
             {state.errors?.username &&
               state.errors.username.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}
@@ -137,7 +134,7 @@ export default function Form({ roles }: { roles: Role[] }) {
           <div id="password-error" aria-live="polite" aria-atomic="true">
             {state.errors?.password &&
               state.errors.password.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}
@@ -180,7 +177,7 @@ export default function Form({ roles }: { roles: Role[] }) {
 
       </div>
       {state.message && (
-        <p className="text-sm text-red-500">{state.message}</p>
+        <p className="text-xs text-red-500">{state.message}</p>
       )}
       <div className="mt-6 flex justify-end gap-4">
         <Link

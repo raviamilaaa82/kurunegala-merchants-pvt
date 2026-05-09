@@ -86,16 +86,16 @@ export default async function DocumentsTable({
                 ))}
               </div>
               <table className="hidden min-w-full rounded-md text-gray-900 md:table">
-                <thead className="rounded-md bg-gray-50 text-left text-sm font-normal">
+                <thead className="rounded-md bg-gray-50 text-left text-xs font-semibold">
                   <tr>
                     <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                      Id
+                      ID
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Document Type
+                      DOCUMENT TYPE
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Validity
+                      VALIDITY
                     </th>
                     {/* <th scope="col" className="px-3 py-5 font-medium">
                       Total Pending
@@ -108,7 +108,7 @@ export default async function DocumentsTable({
 
                 <tbody className="divide-y divide-gray-200 text-gray-900">
                   {documents.map((document) => (
-                    <tr key={document.id} className="group">
+                    <tr key={document.id} className="group text-sm font-normal">
                       <td className="whitespace-nowrap bg-white py-5 pl-4 pr-3 text-sm text-black group-first-of-type:rounded-md group-last-of-type:rounded-md sm:pl-6">
                         <div className="flex items-center gap-3">
                           {/* <Image

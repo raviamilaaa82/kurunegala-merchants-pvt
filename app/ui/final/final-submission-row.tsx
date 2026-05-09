@@ -423,7 +423,7 @@ export default function FinalSubmissionRow({ submission, loggedInRoleSlug, varia
     // ── DESKTOP ──
     return (
         <>
-            <tr >
+            <tr className="text-sm font-normal">
                 <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex items-center gap-3">
                         <ImageWithModal

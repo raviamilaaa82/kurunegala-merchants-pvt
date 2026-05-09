@@ -91,24 +91,24 @@ export default async function UserTable({
                 ))}
               </div>
               <table className="hidden min-w-full rounded-md text-gray-900 md:table">
-                <thead className="rounded-md bg-gray-50 text-left text-sm font-normal">
+                <thead className="rounded-md bg-gray-50 text-left text-xs font-semibold">
                   <tr>
                     {/* <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
                       Id
                     </th> */}
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Name
+                      NAME
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Phone
+                      PHONE
 
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      User Name
+                      USER NAME
 
                     </th>
                     <th scope="col" className="px-4 py-5 font-medium">
-                      Validity
+                      VALIDITY
                     </th>
                   </tr>
                 </thead>

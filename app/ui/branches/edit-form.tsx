@@ -47,7 +47,7 @@ export default function EditBranchesForm({
           <div id="document-error" aria-live="polite" aria-atomic="true">
             {state.errors?.document &&
               state.errors.document.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}
@@ -84,7 +84,7 @@ export default function EditBranchesForm({
 
       </div>
       {state.message && (
-        <p className="text-sm text-red-500">{state.message}</p>
+        <p className="text-xs text-red-500">{state.message}</p>
       )}
       <div className="mt-6 flex justify-end gap-4">
         <Link

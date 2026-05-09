@@ -86,7 +86,7 @@ export default function Form({ companies }: { companies: Company[] }) {
           <div id="branch-error" aria-live="polite" aria-atomic="true">
             {state.errors?.branch &&
               state.errors.branch.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
+                <p className="mt-2 text-xs text-red-500" key={error}>
                   {error}
                 </p>
               ))}
@@ -96,7 +96,7 @@ export default function Form({ companies }: { companies: Company[] }) {
 
       </div>
       {state.message && (
-        <p className="text-sm text-red-500">{state.message}</p>
+        <p className="text-xs text-red-500">{state.message}</p>
       )}
       <div className="mt-6 flex justify-end gap-4">
         <Link

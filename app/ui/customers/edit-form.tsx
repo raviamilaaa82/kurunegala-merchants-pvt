@@ -1,21 +1,11 @@
 'use client';
-import { CustomerField, Documents, CustTableTypeWithSubmission, Branches, Types } from '@/app/lib/definitions';
-import Link from 'next/link';
-import {
-    CheckIcon,
-    ClockIcon,
-    CurrencyDollarIcon,
-    UserCircleIcon,
-} from '@heroicons/react/24/outline';
+import { Branches, Types } from '@/app/lib/definitions';
 import { Button } from '@/app/ui/button';
 import { CustomerState, updateCustomer } from '@/app/lib/actions';
 import { useActionState, useEffect, useState, } from 'react';
-
 import CaptureLocationButton from './capture_location';
-
 import { useRouter } from 'next/navigation';
 import MapPicker from './map-picker';
-
 import ProfileImageUploader from './profile-image-uploader';
 
 
@@ -32,9 +22,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
     const [state, formAction] = useActionState(updateCustomerWithId, initialState);
 
     const [googleLink, setGoogleLink] = useState(customer.loc_link);
-    // const [localErrors, setLocalErrors] = useState<CustomerErrors>({});
     const [localErrors, setLocalErrors] = useState<Record<string, string[]>>({});
-    // const [customerId, setCustomerId] = useState<string>('100');
     const [custName, setCustName] = useState<string>(customer.customer_name || '');
     const [customerCode, setCustomerCode] = useState<string>(customer.cust_code || '');
     const [submissionId, setSubmissionId] = useState<number | null>(null);//setting submissionid
@@ -86,13 +74,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
             return newErrors;
         });
     };
-    // const clearError = (field: keyof CustomerErrors) => {
-    //     setLocalErrors(prev => {
-    //         const updated = { ...prev };
-    //         delete updated[field];
-    //         return updated;
-    //     });
-    // };
+
 
 
     const handleLocationSelect = (
@@ -171,7 +153,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                         <div id="name-error" aria-live="polite" aria-atomic="true">
                             {localErrors?.name &&
                                 localErrors?.name.map((error: string) => (
-                                    <p className="mt-2 text-sm text-red-500" key={error}>
+                                    <p className="mt-2 text-xs text-red-500" key={error}>
                                         {error}
                                     </p>
                                 ))}
@@ -257,11 +239,11 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                         <div id="cust-code-error" aria-live="polite" aria-atomic="true">
                             {localErrors?.cust_code &&
                                 localErrors?.cust_code.map((error: string) => (
-                                    <p className="mt-2 text-sm text-red-500" key={error}>
+                                    <p className="mt-2 text-xs text-red-500" key={error}>
                                         {error}
                                     </p>
                                 ))}
-                            <p className="mt-2 text-sm text-red-500" key={error}>
+                            <p className="mt-2 text-xs text-red-500" key={error}>
                                 {error}
                             </p>
                         </div>
@@ -312,7 +294,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
 
                             {localErrors?.branch_id &&
                                 localErrors?.branch_id.map((error: string) => (
-                                    <p className="mt-2 text-sm text-red-500" key={error}>
+                                    <p className="mt-2 text-xs text-red-500" key={error}>
                                         {error}
                                     </p>
                                 ))}
@@ -321,10 +303,8 @@ export default function Form({ customer, submisnId, branches, types }: { custome
 
 
                     <div className="mb-4">
-
                         <label htmlFor="customer" className="mb-2 block text-sm font-medium">
                             Type
-
                         </label>
                         <div className="relative">
                             <select
@@ -359,16 +339,11 @@ export default function Form({ customer, submisnId, branches, types }: { custome
 
                             {localErrors?.type &&
                                 localErrors?.type.map((error: string) => (
-                                    <p className="mt-2 text-sm text-red-500" key={error}>
+                                    <p className="mt-2 text-xs text-red-500" key={error}>
                                         {error}
                                     </p>
                                 ))}
-                            {/* {state.errors?.branch_id &&
-                state.errors.branch_id.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
-                    {error}
-                  </p>
-                ))} */}
+
                         </div>
                     </div>
 
