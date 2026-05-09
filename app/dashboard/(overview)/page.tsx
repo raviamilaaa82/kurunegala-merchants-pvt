@@ -3,15 +3,15 @@ import RevenueChart from '@/app/ui/dashboard/revenue-chart';
 import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
-import { RevenueChartSkeleton, LatestInvoicesSkeleton, CardSkeleton } from '@/app/ui/skeletons';
+import { CardSkeleton } from '@/app/ui/skeletons';
 import CardWrapper from '@/app/ui/dashboard/cards';
 
-import { fetchLatestInvoices, fetchCardData } from '../../lib/data';
+import { fetchApprovedSubmissionCountForDashboard } from '../../lib/data';
 
 export default async function Page() {
 
     // const { totalPaidInvoices, totalPendingInvoices, numberOfInvoices, numberOfCustomers } = await fetchCardData();
-
+    const { approvedCount, pendingCount } = await fetchApprovedSubmissionCountForDashboard();
     return (
 
         <main className="flex-1 overflow-y-auto">
@@ -20,7 +20,7 @@ export default async function Page() {
             </h1>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <Suspense fallback={<CardSkeleton />}>
-                    <CardWrapper />
+                    <CardWrapper finishedCount={approvedCount} pendingCount={pendingCount} />
                 </Suspense>
 
                 {/* <Card title="Collected" value={totalPaidInvoices} type="collected" />

@@ -23,12 +23,12 @@ const links = [
   { name: 'Documents', href: '/dashboard/documents', permission: 'manage:documents' },
   { name: 'Users', href: '/dashboard/users', permission: 'manage:users' },
   { name: 'Branches', href: '/dashboard/branches', permission: 'manage:branch' },
-  { name: 'Types', href: '/dashboard/types', permission: null },
+  { name: 'Types', href: '/dashboard/types', permission: 'manage:types' },
   { name: 'Roles', href: '/dashboard/roles', permission: 'manage:roles' },
   { name: 'Permissions', href: '/dashboard/permissions', permission: 'manage:permissions' },
   { name: 'History', href: '/dashboard/history', permission: 'manage:history' },
-  { name: 'Reports', href: '/dashboard/reports', permission: null },
-  { name: 'Finals', href: '/dashboard/finals', permission: null },
+  { name: 'Reports', href: '/dashboard/reports', permission: 'manage:reports' },
+  { name: 'Finals', href: '/dashboard/finals', permission: 'manage:final' },
 
 ];
 

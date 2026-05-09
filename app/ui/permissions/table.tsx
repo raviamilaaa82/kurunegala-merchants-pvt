@@ -75,7 +75,6 @@ export default async function UsersClientTable({
             <div className="overflow-hidden rounded-md bg-gray-50 p-2 md:pt-0">
               <div className="md:hidden">
                 {users?.map((user) => {
-
                   const isCurrentUser = user.id === currentUserId;
 
                   return (

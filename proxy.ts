@@ -16,7 +16,7 @@ export default auth((req) => {
         return NextResponse.redirect(new URL('/login', req.url));
     }
 
-
+    // '/dashboard/reports'  '/dashboard/finals'  '/dashboard/history' /dashboard/types'
 
 
     const permissions = req.auth?.user?.permissions ?? [];  // 👈 one variable
@@ -40,6 +40,17 @@ export default auth((req) => {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
+    if (pathname.startsWith('/dashboard/reports') && !permissions.includes('manage:reports')) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
+    if (pathname.startsWith('/dashboard/finals') && !permissions.includes('manage:final')) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
+    if (pathname.startsWith('/dashboard/types') && !permissions.includes('manage:types')) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
 
 
 });

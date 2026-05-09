@@ -17,6 +17,7 @@ const ALL_PERMISSIONS = [
     'manage:documents',
     'manage:users',
     'manage:roles',
+    'manage:types',
     'manage:permissions',
     'manage:branch',
     'manage:history',
@@ -61,19 +62,7 @@ export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { 
 
     const [index, setIndex] = useState<number | null>(null);
 
-    // useEffect(() => {
-    //     if (open === "item-1") {
 
-    //         setLoading(true);
-    //         fetch(`/api/get-images?masterId=${customer.id}`).then((res) => res.json()).then((data) => {
-    //             setImages(data.images || []);
-    //             setLoading(false);
-
-    //         });
-    //     }
-
-
-    // }, [open]);
 
 
     const accordionContent = (
@@ -149,8 +138,7 @@ export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { 
                             /> */}
                             <p className="font-medium">{alRolsWithPermi.display_name}</p>
                         </div>
-                        <p className="text-sm text-gray-500">email</p>
-                        <p className="text-sm text-gray-500">mobile</p>
+
                     </div>
                     {actionButtons}
                 </div>

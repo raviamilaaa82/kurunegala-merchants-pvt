@@ -87,6 +87,24 @@ export default async function UserTable({
                     <div className="pt-4 text-sm">
                       <p>User Name: {user.user_name}</p>
                     </div>
+                    <div className="flex w-full items-center justify-between border-b py-5">
+
+                      <div className="ml-auto">
+                        {
+
+                          userId === user?.id ? (<UpdateUsers id={user.id.toString()} />) : null
+
+                        }
+
+
+                        {roleSlug !== "agent" ? (
+                          <DisableUsers id={user.id} is_enabled={user.is_enabled} />
+                        ) : null
+                        }
+
+                        {/* <DisableDocument id={document.id.toString()} is_valid={document.is_valid} /> */}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

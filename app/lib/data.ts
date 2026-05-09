@@ -54,7 +54,7 @@ type RoleWithPermisson = {
 };
 
 
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 50;
 //newly added code
 export async function fetchUsersWithRoles() {
   const users = await sql<UserWithRole[]>`
@@ -154,7 +154,7 @@ export async function fetchRevenue() {
 
     const data = await sql<Revenue[]>`SELECT * FROM revenue`;
 
-    // console.log('Data fetch completed after 3 seconds.');
+
 
     return data;
   } catch (error) {
@@ -297,7 +297,7 @@ export async function fetchInvoiceById(id: string) {
     throw new Error('Failed to fetch invoice.');
   }
 }
-
+//i think this is not use anymore. need to check
 export async function fetchCustomerPages(query: string) {
   try {
     const data = await sql`SELECT COUNT(*) FROM customers WHERE customers.name 
@@ -311,7 +311,7 @@ export async function fetchCustomerPages(query: string) {
   }
 
 }
-
+//this function is no need i think need to check
 export async function fetchCustomers() {
   try {
     const customers = await sql<CustomerField[]>`
@@ -391,14 +391,8 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
     const role_id = session?.user.roleId;
 
     const role_slug = session?.user.roleSlug ?? '';
-
-
     const resolvedAgentId = userId;
-
-
-
     const isAgentOrDraftOnly = role_slug === 'agent';
-
 
     let statusFilter: string[] = [];
     if (role_slug === 'admin') {
@@ -438,7 +432,7 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
     }
 
 
-    const ITEMS_PER_PAGE = 6;
+    // const ITEMS_PER_PAGE = 50;
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     // const agent = agentId ?? null;
 
@@ -499,7 +493,6 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
     `;
 
 
-
     const countData = await sql`
   SELECT COUNT(DISTINCT s.id) AS total
   FROM submission s
@@ -558,13 +551,11 @@ export async function fetchImagesKeysbWithSubmission(submissionId: string | null
     s.submitted_at,
     s.admin_note,
     s.manager_note,
-
     c.id AS customer_id,
       c.name AS customer_name,
         c.email AS customer_email,
           c.mobile AS customer_mobile,
             c.loc_link,
-
             d.id,
             d.document_id AS document_id,
               d.file_key,
@@ -606,7 +597,7 @@ export async function fetchFilteredSubmissionFinal(query: string, currentPage: n
     const resolvedAgentId = userId;
     const isAgentOrDraftOnly = role_slug === 'agent';
 
-    const ITEMS_PER_PAGE = 6;
+    // const ITEMS_PER_PAGE = 6;
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     // const agent = agentId ?? null;
 
@@ -672,30 +663,6 @@ AND(${branchId}:: text IS NULL OR c.branch_id:: text = ${branchId}:: text)`;
 }
 
 
-// export async function fetchFinalApprovedPages(query: string, branchId: string | null = null) {
-//   try {
-//     const data = await sql`SELECT COUNT(DISTINCT s.id) AS total
-// FROM submission s
-// LEFT JOIN customers c ON c.id = s.customer_id
-// LEFT JOIN users u ON u.id::text = s.agent_id::text
-// LEFT JOIN roles r ON r.id = u.role_id
-// WHERE (
-//     c.name ILIKE ${`%${query}%`} OR
-//     c.cust_code ILIKE ${`%${query}%`} OR
-//     c.mobile ILIKE ${`%${query}%`}
-// )
-// AND s.status::text = 'approved'
-// AND (${branchId}::text IS NULL OR c.branch_id::text = ${branchId}::text)`;
-
-//     const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
-//     return totalPages;
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch total number of customers.');
-//   }
-
-// }
-
 
 export async function fetchImagesKeyForUploadFinalDoc(submissionId: string | null) {
 
@@ -712,6 +679,7 @@ export async function fetchImagesKeyForUploadFinalDoc(submissionId: string | nul
   }
 
 }
+
 
 export async function fetchDocuments() {
   try {
@@ -759,9 +727,9 @@ export async function fetchFilteredDocuments(query: string) {
 
 export async function fetchDocumentPages(query: string) {
   try {
-    const data = await sql`SELECT COUNT(*) FROM tbl_documents WHERE document ILIKE ${`%${query}%`}`;
+    const data = await sql`SELECT COUNT(*) AS total FROM tbl_documents WHERE document ILIKE ${`%${query}%`}`;
 
-    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -789,7 +757,7 @@ export async function fetchDocumentById(id: string) {
   }
 
 }
-
+//need to check
 export async function fetchImageListFromLocalDb(masterId: string | null) {
 
   try {
@@ -842,7 +810,7 @@ export async function fetchCustomerBySubmissionId(submissionId: string | null) {
     throw new Error('Failed to fetch customer table.');
   }
 }
-
+//need to check
 export async function fetchCustomerById(id: string) {
 
   try {
@@ -889,9 +857,9 @@ export async function fetchFilteredUsers(query: string) {
 
 export async function fetchUsersPages(query: string) {
   try {
-    const data = await sql`SELECT COUNT(*) FROM users WHERE name ILIKE ${`%${query}%`}`;
+    const data = await sql`SELECT COUNT(*) AS total FROM users WHERE name ILIKE ${`%${query}%`}`;
 
-    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -942,7 +910,7 @@ export async function fetchFilteredRoles(query: string) {
 
 export async function fetchRolePages(query: string) {
   try {
-    const data = await sql`SELECT COUNT(*) FROM tbl_roles WHERE role ILIKE ${`%${query}%`}`;
+    const data = await sql`SELECT COUNT(*) AS total FROM tbl_roles WHERE role ILIKE ${`%${query}%`}`;
 
     const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
     return totalPages;
@@ -1021,9 +989,9 @@ ORDER BY id ASC
 
 export async function fetchBranchPages(query: string) {
   try {
-    const data = await sql`SELECT COUNT(*) FROM branches WHERE branch ILIKE ${`%${query}%`}`;
+    const data = await sql`SELECT COUNT(*) AS total FROM branches WHERE branch ILIKE ${`%${query}%`}`;
 
-    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -1061,9 +1029,9 @@ ORDER BY id ASC	`;
 
 export async function fetchTypePages(query: string) {
   try {
-    const data = await sql`SELECT COUNT(*) FROM types WHERE type ILIKE ${`%${query}%`}`;
+    const data = await sql`SELECT COUNT(*) AS total FROM types WHERE type ILIKE ${`%${query}%`}`;
 
-    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -1098,9 +1066,10 @@ export async function fetchFilteredTypes(query: string) {
 }
 
 
-export async function fetchUserActivity(query: string) {
+export async function fetchUserActivity(query: string, currentPage: number) {
 
   try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     const data = await sql<ActivityHistory[]>`
         SELECT 
             ua.id,
@@ -1119,6 +1088,7 @@ export async function fetchUserActivity(query: string) {
          r.display_name ILIKE ${`%${query}%`}
         ORDER BY ua.created_at DESC
         LIMIT 100
+        OFFSET ${offset}
     `;
     return data;
 
@@ -1135,7 +1105,7 @@ export async function fetchUserActivity(query: string) {
 export async function fetchUserActivityPages(query: string) {
   try {
     const data = await sql`
-        SELECT COUNT(*)
+        SELECT COUNT(*) AS total
         FROM user_activity ua
         LEFT JOIN users u ON u.id::text = ua.user_id
         LEFT JOIN roles r ON r.id = u.role_id
@@ -1146,7 +1116,7 @@ export async function fetchUserActivityPages(query: string) {
          r.display_name ILIKE ${`%${query}%`}         
            `;
 
-    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -1157,14 +1127,14 @@ export async function fetchUserActivityPages(query: string) {
 
 
 
-const ITEMS_PER_PAGE1 = 10;
+// const ITEMS_PER_PAGE1 = 10;
 
 export async function getSubmissionsByStatus(
   status: string,
   currentPage: number,
   query: string = '' // optional search by customer name
 ) {
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE1;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   const rows = await sql`
     SELECT 
@@ -1256,6 +1226,25 @@ export async function getSubmissionById(id: string) {
   };
 }
 
+export async function fetchApprovedSubmissionCountForDashboard() {
+  try {
+    const data = await sql`SELECT COUNT(*) AS total FROM submission WHERE status='approved'`;
+
+    const pending = await sql`SELECT COUNT(*) as total 
+FROM submission 
+WHERE status IN ('pending_admin', 'pending_manager');`;
+
+
+    const approvedCount = data[0].total;
+    const pendingCount = pending[0].total;
+
+    return { approvedCount, pendingCount };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of approved submission.');
+  }
+
+}
 
 
 

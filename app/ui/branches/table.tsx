@@ -79,6 +79,13 @@ export default async function BranchesTable({
                         <p className="font-medium">{customer.total_paid}</p>
                       </div> */}
                     </div>
+
+                    <div className="flex w-full items-center justify-between border-b py-5">
+
+                      <div className="ml-auto">
+                        <DisableBranch id={branch.id.toString()} is_valid={branch.is_valid} />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
