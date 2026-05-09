@@ -19,7 +19,7 @@ export default async function TypesTable({
   // customers: FormattedCustomersTable[];
 }) {
 
-  const types = await fetchFilteredTypes(query);
+  const types = await fetchFilteredTypes(query, currentPage);
 
   return (
     <div className="w-full">

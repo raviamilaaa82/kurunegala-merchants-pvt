@@ -51,7 +51,7 @@ const BranchSchema = z.object({
 });
 const TypeSchema = z.object({
     id: z.string(),
-    type: z.string({ invalid_type_error: 'Please enter type name' }).min(1, 'type name cannot be empty'),
+    type: z.string({ invalid_type_error: 'Please enter type name' }).min(1, 'Type name cannot be empty'),
     branch: z.coerce
         .number()
         .gt(0, { message: 'Branch ID is empty!' }),
@@ -197,11 +197,13 @@ export type BranchState = {
 }
 
 export type TypeState = {
+    status?: "success" | "error" | null;
     errors?: {
         type?: string[];
         branch?: string[];
     };
     message?: string | null;
+    error?: string | null;
 }
 
 export type CustomerErrorResponse = {
@@ -1184,7 +1186,7 @@ export async function acceptSubmissionAdminOrManager(summissionId: string) {
     redirect('/dashboard/customers');
 }
 
-export async function createType(prevState: TypeState, formData: FormData) {
+export async function createType(prevState: TypeState, formData: FormData): Promise<TypeState> {
 
     const validatedFields = CreateType.safeParse({
         type: formData.get('type'),
@@ -1193,10 +1195,17 @@ export async function createType(prevState: TypeState, formData: FormData) {
 
 
     if (!validatedFields.success) {
+        // return {
+        //     errors: validatedFields.error.flatten().fieldErrors,
+        //     message: 'Missing Fields. Failed to Create Type',
+        // };
+
         return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to create company type.',
+            error: null,
             errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Create Type',
-        };
+        } satisfies TypeState;
     }
 
     const { type, branch } = validatedFields.data;
@@ -1210,10 +1219,12 @@ export async function createType(prevState: TypeState, formData: FormData) {
   `;
     } catch (error) {
 
-        console.error(error);
-        // return {
-        //     message: 'Database Error: Failed to Create Invoice.',
-        // };
+        return {
+            status: 'error' as const,
+            message: 'Failed to create company type',
+            error: 'Failed to create company type',
+            errors: {},
+        } satisfies TypeState;
     }
     revalidatePath('/dashboard/types');
     redirect('/dashboard/types');

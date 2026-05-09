@@ -1066,8 +1066,9 @@ export async function fetchTypePages(query: string) {
 }
 
 
-export async function fetchFilteredTypes(query: string) {
+export async function fetchFilteredTypes(query: string, currentPage: number) {
   try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     const data = await sql<Types[]>`
           SELECT 
               t.id,
@@ -1081,7 +1082,9 @@ export async function fetchFilteredTypes(query: string) {
           WHERE
                 t.type ILIKE ${`%${query}%`} OR
                 b.branch ILIKE ${`%${query}%`}
-          ORDER BY id ASC		
+          ORDER BY id ASC	
+          LIMIT ${ITEMS_PER_PAGE}
+          OFFSET ${offset}	
 	  `;
     return data;
   } catch (err) {

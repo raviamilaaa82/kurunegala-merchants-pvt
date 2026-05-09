@@ -19,7 +19,7 @@ export default async function BranchesTable({
   // customers: FormattedCustomersTable[];
 }) {
 
-  const branches = await fetchFilteredBranch(query);
+  const branches = await fetchFilteredBranch(query, currentPage);
 
   return (
     <div className="w-full">
