@@ -9,18 +9,38 @@ import {
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useTransition } from 'react';
 import { authenticate } from '@/app/lib/actions';
 import { useSearchParams } from 'next/navigation';
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const [isPending, startTransition] = useTransition();
 
-  const [errorMessage, formAction, isPending] = useActionState(
+  // const [errorMessage, formAction, isPending] = useActionState(
+  //   authenticate,
+  //   undefined,
+  // );
+
+  const [errorMessage, formAction] = useActionState(
     authenticate,
     undefined,
   );
+
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        // page is active again, pending should be cleared
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
+
+
   return (
     <form action={formAction} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
