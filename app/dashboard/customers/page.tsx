@@ -13,7 +13,7 @@ import { redirect } from "next/navigation";
 
 import BranchDropDowns from "@/app/ui/customers/branch-select";
 import CompanyTypesDropDown from "@/app/ui/final/com-type-select";
-
+import BranchCompanyFilter from "@/app/ui/customers/branch-company-filter";
 
 
 export default async function Page(props: { searchParams?: Promise<{ query?: string, page?: string, status?: string, branch?: string, type: string }> }) {
@@ -29,7 +29,6 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
     const userName = session?.user.name;
     const loggedInroleSlug = session?.user.roleSlug;
 
-
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
     const currentPage = Number(searchParams?.page) || 1;
@@ -37,7 +36,7 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
     const branch_id = searchParams?.branch || '';
     const typeId = searchParams?.type || '';
     // const totalPages = await fetchCustomerPages(query);
-    const companies = await fetchCompanies();
+    // const companies = await fetchCompanies();
     const branches = await fetchdBranches();
     const companyType = await fetchTypes();
 
@@ -60,12 +59,14 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
             {/* className="mt-4 flex flex-col gap-4 md:flex-row md:justify-between md:items-center" */}
             <div className="mt-4 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
                 <StatusTabs roleSlug={loggedInroleSlug} />
-                <div className="md:ml-auto">
+                <BranchCompanyFilter branches={branches}
+                    allTypes={companyType} />
+                {/* <div className="md:ml-auto">
                     <BranchDropDowns branches={branches} />
                 </div>
                 <div className="md:ml-auto">
                     <CompanyTypesDropDown types={companyType} />
-                </div>
+                </div> */}
             </div>
 
             <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">

@@ -9,18 +9,7 @@ export default function CompanyTypesDropDown({ types }: { types: Types[] }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentType = searchParams.get('type') || 'all';
-    // const searchParamsRef = useRef(searchParams);
 
-    // const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    //     const params = new URLSearchParams(searchParams.toString());
-    //     if (event.target.value) {
-    //         params.set('type', event.target.value);
-    //     } else {
-    //         params.delete('type');
-    //     }
-    //     params.set('page', '1');
-    //     router.push(`/dashboard/customers?${params.toString()}`);
-    // };
     const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('type', event.target.value);
@@ -28,14 +17,7 @@ export default function CompanyTypesDropDown({ types }: { types: Types[] }) {
         router.push(`/dashboard/customers?${params.toString()}`);
     };
 
-    // useEffect(() => {
-    //     if (!searchParamsRef.current.has('type') && types.length > 0) {
-    //         const params = new URLSearchParams(searchParamsRef.current.toString());
-    //         params.set('type', String(types[0].id)); // 👈 use first branch as default
-    //         // params.set('page', '1');
-    //         router.replace(`/dashboard/customers?${params.toString()}`); // 👈 replace not push (no back-button history)
-    //     }
-    // }, []); // 👈 run when branches load
+
 
     return (
         <div className="flex w-full">

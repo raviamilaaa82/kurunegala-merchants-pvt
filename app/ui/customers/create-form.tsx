@@ -36,12 +36,15 @@ export default function Form({ branches, types }: { branches: Branches[], types:
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [profileImgUrl, setProfileImgUrl] = useState<string>('');
-
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);//from load type drop down according to branch drop down select
 
 
   const router = useRouter();
 
-
+  //loading company type dropdown according to branch dropdown selected value
+  const filteredTypes = selectedBranchId
+    ? types.filter((t) => Number(t.branch_id) === selectedBranchId)
+    : types;
 
   useEffect(() => {
     if (state.status === 'error' && state.errors) {
@@ -99,12 +102,6 @@ export default function Form({ branches, types }: { branches: Branches[], types:
   });
 
 
-
-
-
-
-
-
   //for map
   const handleLocationSelect = (
     coords: { lat: number; lng: number },
@@ -132,8 +129,6 @@ export default function Form({ branches, types }: { branches: Branches[], types:
     setGoogleLink(googleMapsLink);
 
   }
-
-
 
 
   const resetAll = () => {
@@ -322,7 +317,11 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 defaultValue=""
                 aria-describedby="branch-error"
-                onChange={handleBranchesChange}
+                // onChange={handleBranchesChange}
+                onChange={(e) => {
+                  handleBranchesChange(e); // ✅ keep your existing handler
+                  setSelectedBranchId(Number(e.target.value) || null); // ✅ add this
+                }}
               // disabled={isDropDownEnabled}
               >
                 <option value="" disabled>
@@ -337,12 +336,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
             </div>
 
             <div id="branch-error" aria-live="polite" aria-atomic="true">
-              {/* {state.errors?.branch_id &&
-                state.errors.branch_id.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
-                    {error}
-                  </p>
-                ))} */}
+
               {localErrors?.branch_id &&
                 localErrors?.branch_id.map((error: string) => (
                   <p className="mt-2 text-xs text-red-500" key={error}>
@@ -371,7 +365,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                 <option value="" disabled>
                   Select a Type
                 </option>
-                {types.map((type) => (
+                {filteredTypes.map((type) => (
                   <option key={type.id} value={type.id}>
                     {type.type}
                   </option>
