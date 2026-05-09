@@ -24,11 +24,11 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 <CreateDocument />
             </div>
             <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-                <Table query={query} currentPage={currentPage} />
+                <Table query={query} />
             </Suspense>
-            <div className="mt-5 flex w-full justify-center">
+            {/* <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages} />
-            </div>
+            </div> */}
         </div>
 
     );

@@ -52,7 +52,7 @@ type RoleWithPermisson = {
     permissions: string[] | null;
 };
 
-// export default function CustomerRow({ customer }: { customer: any }) {
+
 
 export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { alRolsWithPermi: RoleWithPermisson, variant?: "desktop" | "mobile" }) {
     const [open, setOpen] = useState("");
@@ -67,19 +67,13 @@ export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { 
 
     const accordionContent = (
         <>
-            {/* {loading && <p className="text-sm p-4">Loading images...</p>} */}
-            {/* {!loading && alRolsWithPermi.length === 0 && (
-                <p className="text-sm p-4">No images found.</p>
-            )} */}
 
-            {/* {!loading && alRolsWithPermi.length > 0 && ( */}
             {!loading && (
                 <div className="flex flex-row flex-wrap gap-4 p-4">
                     {ALL_PERMISSIONS.map((perm) => {
                         const checked = alRolsWithPermi.permissions?.includes(perm);
 
-                        // console.log(perm + checked);
-                        // console.log(perm);
+
                         return (
                             <label key={perm} className="flex items-center gap-1 text-sm cursor-pointer">
                                 <input
@@ -118,8 +112,7 @@ export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { 
             >
                 <ChevronDownIcon className="w-5" />
             </button>
-            {/* <UpdateCustomer id={customer.id} />
-            <DisableCustomer id={customer.id} is_enabled={customer.is_enabled} /> */}
+
         </div>
     );
 
@@ -129,13 +122,7 @@ export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { 
                 <div className="flex items-center justify-between border-b pb-4">
                     <div>
                         <div className="mb-2 flex items-center gap-3">
-                            {/* <Image
-                                src={allRolesWithTheirPermissions.}
-                                className="rounded-full"
-                                alt={`${role.display_name}'s profile picture`}
-                                width={28}
-                                height={28}
-                            /> */}
+
                             <p className="font-medium">{alRolsWithPermi.display_name}</p>
                         </div>
 
@@ -152,27 +139,7 @@ export default function UserRoleRow({ alRolsWithPermi, variant = "desktop" }: { 
         <>
             <tr>
                 <td className="bg-white px-4 py-5">{alRolsWithPermi.display_name}</td>
-                {/* <td className="bg-white px-4 py-5">cole 1</td>
-                <td className="bg-white px-4 py-5">col2</td> */}
-                {/* <td className="bg-white px-4 py-5 text-sm">
-                    {customer.loc_link ? (
-                        <a
-                            href={customer.loc_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 underline"
-                        >
-                            View on Google Maps
-                        </a>
-                    ) : (
-                        <span className="text-gray-400">—</span>
-                    )}
-                </td> */}
-                {/* <td className="bg-white px-4 py-5"> {customer.is_enabled ? (
-                    <span className="text-green-600">✓ Valid</span>
-                ) : (
-                    <span className="text-red-600">✗ Invalid</span>
-                )}</td> */}
+
                 <td className="bg-white px-4 py-5">
                     <div className="flex justify-end gap-3">{actionButtons}</div>
                 </td>

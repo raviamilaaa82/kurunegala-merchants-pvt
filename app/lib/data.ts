@@ -863,8 +863,10 @@ export async function fetchCustomerById(id: string) {
 }
 
 //need to check
-export async function fetchFilteredUsers(query: string) {
+
+export async function fetchFilteredUsers(query: string, currentPage: number) {
   try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     const data = await sql<User[]>`
 		SELECT
         id, name, email,is_enabled,phone,user_name
@@ -873,6 +875,8 @@ export async function fetchFilteredUsers(query: string) {
 		  name ILIKE ${`%${query}%`} 
 		
 		ORDER BY id ASC
+    LIMIT ${ITEMS_PER_PAGE}
+OFFSET ${offset}
 	  `;
 
     return data;
@@ -981,10 +985,10 @@ export async function fetchCompanies() {
 
 
 
-export async function fetchFilteredBranch(query: string) {
+export async function fetchFilteredBranch(query: string, currentPage: number) {
   try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     const data = await sql<Branches[]>`
-
 SELECT 
     b.id,
     b.branch,

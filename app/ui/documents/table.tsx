@@ -1,21 +1,18 @@
 import Image from 'next/image';
 import { lusitana } from '@/app/ui/fonts';
 import Search from '@/app/ui/search';
-import {
-  CustomersTableType,
-  FormattedCustomersTable,
-} from '@/app/lib/definitions';
+
 import { fetchFilteredDocuments } from '@/app/lib/data';
 import { UpdateDocument, DisableDocument } from '@/app/ui/documents/buttons';
 import { Badge } from "@/components/ui/badge";
 
 export default async function DocumentsTable({
   query,
-  currentPage
+  // currentPage
   // customers,
 }: {
   query: string,
-  currentPage: number
+  // currentPage: number
   // customers: FormattedCustomersTable[];
 }) {
 

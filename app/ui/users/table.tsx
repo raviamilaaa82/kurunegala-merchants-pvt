@@ -22,7 +22,7 @@ export default async function UserTable({
 
 }) {
 
-  const users = await fetchFilteredUsers(query);
+  const users = await fetchFilteredUsers(query, currentPage);
 
   return (
     <div className="w-full">
