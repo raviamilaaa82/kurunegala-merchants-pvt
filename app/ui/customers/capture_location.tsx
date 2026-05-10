@@ -24,7 +24,22 @@ export default function CaptureLocationButton({ onLocationCaptured }: Props) {
             onLocationCaptured(googleMapsLink);
 
         } catch (err) {
-            alert("Could not get location. Please allow location access.");
+            // alert("Could not get location. Please allow location access.");
+            if (err instanceof GeolocationPositionError) {
+                switch (err.code) {
+                    case err.PERMISSION_DENIED:
+                        alert("Location permission denied. Please enable it in your browser/phone settings.");
+                        break;
+                    case err.POSITION_UNAVAILABLE:
+                        alert("Location unavailable. Are you in airplane mode or indoors?");
+                        break;
+                    case err.TIMEOUT:
+                        alert("Location request timed out. Try again.");
+                        break;
+                }
+            } else {
+                alert(`Unexpected error: ${String(err)}`);
+            }
         }
     };
 
