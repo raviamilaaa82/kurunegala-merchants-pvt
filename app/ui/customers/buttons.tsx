@@ -2,7 +2,11 @@ import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon, ArrowDownRightIcon, Check
 import Link from 'next/link';
 import { acceptSubmissionAdminOrManager, rejectSubmissionAdminOrManager } from '@/app/lib/actions';
 // import ApproveDialog from './approve-dialog';
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 export function CreateCustomer() {
   return (
     <Link
@@ -17,15 +21,22 @@ export function CreateCustomer() {
 
 export function UpdateCustomer({ id, submissionId }: { id: string, submissionId: string }) {
   return (
-    <Link
-      // href={`/dashboard/customers/${id}/edit`}
-      //going to use search query param instead of creating new document
-      href={`/dashboard/customers/${id}/edit?submissionId=${submissionId}`}
-      className="rounded-md border p-2 hover:bg-gray-100"
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link
+          // href={`/dashboard/customers/${id}/edit`}
+          //going to use search query param instead of creating new document
+          href={`/dashboard/customers/${id}/edit?submissionId=${submissionId}`}
+          className="rounded-md border p-2 hover:bg-gray-100"
 
-    >
-      <PencilIcon className="w-5" />
-    </Link>
+        >
+          <PencilIcon className="w-5" />
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Edit/Update</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -63,13 +74,19 @@ export function AcceptSumbission({ submissionId }: { submissionId: string }) {
   return (
 
     <form action={toggleCustomerStatus}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+            <span className="sr-only">Enabled</span>
 
-      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Enabled</span>
+            <CheckIcon className="w-5" />
 
-        <CheckIcon className="w-5" />
-
-      </button>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Accept</p>
+        </TooltipContent>
+      </Tooltip>
     </form>
   );
 }
@@ -78,12 +95,19 @@ export function RejectSumbission({ submissionId }: { submissionId: string }) {
   const toggleCustomerStatus = rejectSubmissionAdminOrManager.bind(null, submissionId);
   return (
     <form action={toggleCustomerStatus}>
-      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Enabled</span>
-        {/* {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />} */}
-        <XMarkIcon className="w-5" />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+            <span className="sr-only">Enabled</span>
+            {/* {is_enabled ? <TrashIcon className="w-5" /> : <XCircleIcon className="w-5" />} */}
+            <XMarkIcon className="w-5" />
 
-      </button>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Reject</p>
+        </TooltipContent>
+      </Tooltip>
     </form>
   );
 }

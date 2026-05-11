@@ -2,7 +2,11 @@ import { PencilIcon, PlusIcon, TrashIcon, XCircleIcon, XMarkIcon, CheckIcon } fr
 import Link from 'next/link';
 import { disableUser } from '@/app/lib/actions';
 // import { createDocument } from '@/app/lib/actions';
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 export function CreateUser() {
   return (
     <Link
@@ -17,6 +21,7 @@ export function CreateUser() {
 
 export function UpdateUsers({ id }: { id: string }) {
   return (
+
     <Link
       href={`/dashboard/users/${id}/edit`}
       className="rounded-md border p-2 hover:bg-gray-100"
@@ -31,9 +36,11 @@ export function DisableUsers({ id, is_enabled }: { id: string, is_enabled: boole
   return (
     <form action={toggleCustomerStatus}>
       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Enabled</span>
+        <span className="sr-only">{is_enabled ? "Disable" : "Enable"}</span>
         {is_enabled ? <XMarkIcon className="w-5" /> : <CheckIcon className="w-5" />}
-        {/* <TrashIcon className="w-5" /> */}
+        {/* <span className="sr-only">Enabled</span>
+        {is_enabled ? <XMarkIcon className="w-5" /> : <CheckIcon className="w-5" />}
+        */}
       </button>
     </form>
   );

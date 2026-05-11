@@ -2,6 +2,11 @@ import { PencilIcon, PlusIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/
 import Link from 'next/link';
 // import { deleteInvoice } from '@/app/lib/actions';
 import { disableDocument } from '@/app/lib/actions';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function CreateDocument() {
   return (
@@ -30,6 +35,7 @@ export function DisableDocument({ id, is_valid }: { id: string, is_valid: boolea
   const toggleDocumentStatus = disableDocument.bind(null, id, !is_valid);
   return (
     <form action={toggleDocumentStatus}>
+
       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Enabled</span>
         {is_valid ? <XMarkIcon className="w-5" /> : <CheckIcon className="w-5" />}

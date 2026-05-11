@@ -28,6 +28,11 @@ import { useActionState } from 'react';
 import { ImageWithModal } from "./ImageWithModal";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpRightIcon } from "lucide-react";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 
 
@@ -473,13 +478,19 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
 
     const actionButtons = (
         <div className="flex gap-3">
-            <button
-                className="rounded-md border p-2 hover:bg-gray-100"
-                onClick={() => setOpen(open ? "" : "item-1")}
-            >
-                <ChevronDownIcon className="w-5" />
-            </button>
-            {/* {(submission.status =='draft') ?? (<UpdateCustomer id={submission.customer_id} submissionId={submission.submission_id} />)} */}
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        className="rounded-md border p-2 hover:bg-gray-100"
+                        onClick={() => setOpen(open ? "" : "item-1")}
+                    >
+                        <ChevronDownIcon className="w-5" />
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>View Documents</p>
+                </TooltipContent>
+            </Tooltip>
             {
 
                 (() => {
@@ -498,37 +509,24 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                     const showButton = allowedStatuses?.includes(status) ?? false;
 
                     return showButton ? (
+
                         <UpdateCustomer
                             id={submission.customer_id}
                             submissionId={submission.submission_id}
 
                         />
+
                     ) : null;
                 })()
 
             }
 
-
-            {/* {
-                submission.status !== 'approved' && (loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager") ? (
-                    <AcceptSumbission submissionId={submission.submission_id} />
-                ) : null
-
-            } */}
             {
                 ((loggedInRoleSlug === "manager" && submission.status !== 'approved' && submission.status !== 'manager_rejected') ||
                     (loggedInRoleSlug === "admin" && submission.status !== 'pending_manager')) && (
                     <AcceptSumbission submissionId={submission.submission_id} />
                 )
             }
-
-
-            {/* {submission.status!=='approved'&& loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager" ?
-                // (<AcceptSumbission submissionId={submission.submission_id} />) : null
-                (<ApproveDialog submissionId={submission.submission_id} />) : null
-
-            } */}
-
 
             {
                 ((loggedInRoleSlug === "manager" &&
@@ -542,22 +540,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                 )
             }
 
-            {/* {
-                submission.status !== 'approved' && submission.status !== 'pending_manager' && (loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager") ? (
-                    <RejectSumbission submissionId={submission.submission_id} />
-                ) : null
 
-            } */}
-
-            {/* {
-            loggedInRoleSlug === "admin" || loggedInRoleSlug === "manager" ?
-                (<RejectSumbission submissionId={submission.submission_id} />) : null
-            } */}
-
-
-            {/* <DisableCustomer id={submission.customer_id} is_enabled={submission.is_enabled} /> */}
-            {/* <UploadDocuments id={submission.id} /> */}
-            {/* <UploadDocumentsWithSessionId id={submission.customer_id} submission={submission} /> */}
         </div>
     );
 
@@ -577,28 +560,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                         </div>
                         <p className="text-sm text-gray-500">{submission.customer_mobile}</p>
                     </div>
-                    {/* <div>
-                        <div className="mb-2 flex items-center gap-3">
-                            {submission.loc_link ? (
-                                <a
-                                    href={submission.loc_link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 underline"
-                                >
-                                    View on Google Maps
-                                </a>
-                            ) : (
-                                <span className="text-gray-400">—</span>
-                            )}
-                        </div>
-                        <p className="text-sm text-gray-500">{submission.customer_mobile}</p>
-                    </div> */}
 
-                    {/* Bottom: action buttons aligned right */}
-                    {/* <div className="flex justify-end mt-2">
-                        {actionButtons}
-                    </div> */}
                 </div>
                 <div className="flex flex-col border-b pb-4">
                     {/* Top: customer info */}
@@ -617,26 +579,10 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                             }
 
 
-                            {/* {submission.loc_link ? (
-                                <a
-                                    href={submission.loc_link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 underline"
-                                >
-                                    View on Google Maps
-                                </a>
-                            ) : (
-                                <span className="text-gray-400">—</span>
-                            )} */}
                         </div>
                         <p className="text-sm text-gray-500">{submission.cust_code}</p>
                     </div>
 
-                    {/* Bottom: action buttons aligned right */}
-                    {/* <div className="flex justify-end mt-2">
-                        {actionButtons}
-                    </div> */}
                 </div>
                 <div className="flex flex-col border-b pb-4">
                     {/* Top: customer info */}
@@ -660,47 +606,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                 {/* Accordion content – now it will expand below the buttons */}
                 {accordion}
             </div>
-            // <div className="flex flex-col border-b pb-4">
-            //     {/* Top section: customer info */}
-            //     <div>
-            //         <div className="mb-2 flex items-center gap-3">
-            //             <ImageWithModal
-            //                 imageUrl={submission.image_url}
-            //                 altText={`${submission.customer_name}'s profile picture`}
-            //             />
-            //             <p className="font-medium">{submission.customer_name}</p>
-            //         </div>
-            //         <p className="text-sm text-gray-500">{submission.customer_mobile}</p>
-            //     </div>
 
-            //     {/* Bottom section: action buttons, aligned right */}
-            //     <div className="flex justify-end mt-2">
-            //         {actionButtons}
-            //     </div>
-            // </div>
-            // <div className="mb-2 w-full rounded-md bg-white p-4">
-            //     <div className="flex items-center justify-between border-b pb-4">
-            //         <div>
-            //             <div className="mb-2 flex items-center gap-3">
-            //                 <ImageWithModal
-            //                     imageUrl={submission.image_url}
-            //                     altText={`${submission.customer_name}'s profile picture`}
-            //                 />
-
-            //                 <p className="font-medium">{submission.customer_name}</p>
-            //             </div>
-
-            //             <p className="text-sm text-gray-500">{submission.customer_mobile}</p>
-
-            //         </div>
-            //         <div className="flex justify-end">
-            //             {actionButtons}
-            //         </div>
-
-            //     </div>
-
-            //     {accordion}
-            // </div>
         );
     }
 
