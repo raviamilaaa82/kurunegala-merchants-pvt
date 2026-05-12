@@ -1260,12 +1260,36 @@ export async function rejectSubmissionAdminOrManager(summissionId: string) {
             SET status = 'admin_rejected'
             WHERE id = ${summissionId}
         `;
+
+        await sql`
+    SELECT pg_notify(
+        'submission_status',
+        ${JSON.stringify({
+            summissionId,
+            status: "rejected",        // e.g. 'admin_rejected'
+            // message: `Your submission has been ${newStatus.replace('admin_', '').replace('_', ' ')}`
+            message: "Your submission has been rejected"
+        })}
+    )
+`;
     } else if (roleSlug === "manager" && summissionId !== undefined) {
         await sql`
             UPDATE submission 
             SET status = 'manager_rejected'
             WHERE id = ${summissionId}
         `;
+
+        await sql`
+    SELECT pg_notify(
+        'submission_status',
+        ${JSON.stringify({
+            summissionId,
+            status: "rejected",        // e.g. 'admin_rejected'
+            // message: `Your submission has been ${newStatus.replace('admin_', '').replace('_', ' ')}`
+            message: "Your submission has been rejected"
+        })}
+    )
+`;
     } else {
         // return { error: "Unauthorized to update this field" };
     }

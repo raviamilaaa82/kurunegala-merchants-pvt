@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useEffect, useState } from 'react';
 const tabs = [
     { label: 'All', status: '' },
     { label: 'Draft', status: 'draft' },
@@ -12,25 +13,71 @@ const tabs = [
     { label: 'Approved', status: 'approved', roleSlug: 'manager' },
 ];
 
-// const tabs = [
-//     { label: 'All', status: null }, // null means no filter
-//     { label: 'Draft', dbStatuses: ['draft'] },
-//     { label: 'Pending Review', dbStatuses: ['pending_admin', 'pending_manager'] },
-//     { label: 'Rejected', dbStatuses: ['manager_rejected', 'admin_rejected'] },
-//     { label: 'Approved', dbStatuses: ['approved'], roleSlug: 'manager' }, // keep roleSlug if needed
-// ];
+
+const STATUS_MAP: Record<string, string> = {
+    admin_rejected: "rejected",
+    admin_approved: "approved",
+    pending_admin: "pending",
+};
 
 export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
+    const [notification, setNotification] = useState<string | null>(null);//for listen notification
     const router = useRouter();
     const searchParams = useSearchParams();
     const current = searchParams.get('status') || '';
+
+    const [notifCounts, setNotifCounts] = useState<Record<string, number>>({
+        draft: 0,
+        pending: 0,
+        rejected: 0,
+        approved: 0,
+    });
+
+
+    useEffect(() => {
+        let es: EventSource;
+
+        const connect = () => {
+            es = new EventSource("/api/notifications");
+
+            es.onopen = () => console.log("✅ SSE connected");       // is this printing?
+
+            es.onmessage = (e) => {
+                console.log("📨 RAW SSE data:", e.data);             // is this printing?
+                const data = JSON.parse(e.data);
+                const tabStatus = STATUS_MAP[data.status] ?? data.status;
+                console.log("📨 Parsed:", data);
+                console.log("tabStatus:", tabStatus);        // ← what does this print?
+                console.log("notifCounts:", notifCounts)
+                setNotifCounts(prev => ({
+                    ...prev,
+                    [data.status]: (prev[data.status] || 0) + 1
+                }));
+            };
+
+            es.onerror = (err) => {
+                console.error("❌ SSE error:", err);
+                es.close();
+                setTimeout(connect, 3000);                           // reconnect
+            };
+        };
+
+        connect();
+        return () => es?.close();
+    }, []);
 
     const handleStatusChange = (newStatus: string) => {
         const params = new URLSearchParams(searchParams.toString()); // 👈 keep existing params
         params.set('status', newStatus);
         params.set('page', '1');
         router.push(`/dashboard/customers?${params.toString()}`);
+
+        // Clear badge when user visits that tab
+        setNotifCounts(prev => ({ ...prev, [newStatus]: 0 }));
     };
+
+
+
     return (
         <div className="flex gap-1 border-b w-full">
             {
@@ -49,7 +96,25 @@ export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
                                     : 'border-transparent text-gray-500 hover:text-gray-700'
                             )}
                         >
-                            {tab.label}
+                            {/* {tab.label} */}
+                            {/* for showing notification  */}
+                            <span className="relative">
+                                {tab.label}
+
+                                {
+                                    notifCounts[tab.status] > 0 && (
+                                        <span className="
+                                            absolute -top-1 -right-3 
+                                            h-2.5 w-2.5 
+                                            bg-red-600 
+                                            rounded-full 
+                                            animate-pulse
+                                        "></span>
+
+                                    )
+
+                                }
+                            </span>
                         </button>
                     ))}
         </div>

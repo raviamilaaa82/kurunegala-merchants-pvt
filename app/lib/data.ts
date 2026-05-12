@@ -511,6 +511,13 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
         --NON - DRAFT rules
         WHEN ${isAgentOrDraftOnly} THEN 
             s.agent_id:: text = ${userId}:: text-- agent: own records only
+            OR (
+            s.status::text IN ('admin_rejected', 'manager_rejected')
+            AND (
+                s.agent_id::text = ${userId}::text  -- either they submitted it
+                OR r.slug IN ('admin', 'manager')   -- OR it was created by admin/manager
+            )
+        )
         ELSE TRUE-- admin / manager: see all
     END
     )
