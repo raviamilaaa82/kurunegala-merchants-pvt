@@ -14,12 +14,19 @@ const tabs = [
 ];
 
 
+// const STATUS_MAP: Record<string, string> = {
+//     admin_rejected: "rejected",
+//     admin_approved: "approved",
+//     pending_admin: "pending",
+// };
+
 const STATUS_MAP: Record<string, string> = {
     admin_rejected: "rejected",
+    manager_rejected: "rejected",
     admin_approved: "approved",
     pending_admin: "pending",
+    pending_manager: "pending",
 };
-
 export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
     const [notification, setNotification] = useState<string | null>(null);//for listen notification
     const router = useRouter();
@@ -43,12 +50,32 @@ export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
             es.onopen = () => console.log("✅ SSE connected");       // is this printing?
 
             es.onmessage = (e) => {
-                console.log("📨 RAW SSE data:", e.data);             // is this printing?
+
                 const data = JSON.parse(e.data);
+
+
+                //new code for preventing admin reject on manager 
+                const shouldNotify = (() => {
+                    if (roleSlug === "manager") {
+                        // Manager only sees manager_rejected notifications
+                        return data.status === "manager_rejected";
+                    }
+                    // if (roleSlug === "admin") {
+                    //     // Admin sees admin_rejected only
+                    //     return data.status === "admin_rejected";
+                    // }
+                    // Agent/others see all rejected
+                    return true;
+                })();
+
+                if (!shouldNotify) return;
+
+
+
+
+
                 const tabStatus = STATUS_MAP[data.status] ?? data.status;
-                console.log("📨 Parsed:", data);
-                console.log("tabStatus:", tabStatus);        // ← what does this print?
-                console.log("notifCounts:", notifCounts)
+
                 setNotifCounts(prev => ({
                     ...prev,
                     [data.status]: (prev[data.status] || 0) + 1
