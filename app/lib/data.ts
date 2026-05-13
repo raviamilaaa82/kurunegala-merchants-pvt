@@ -828,11 +828,14 @@ export async function fetchCustomerBySubmissionId(submissionId: string | null) {
       c.name AS customer_name,
       c.email AS customer_email,
       c.image_url,
-      c.mobile AS customer_mobile,
+      c.mobile AS customer_mobile,      
       c.loc_link,
       c.cust_code,
       c.branch_id,
-      c.type_id
+      c.type_id,
+      c.landline,
+      c.address,
+      c.owner_identity
   FROM submission s
   LEFT JOIN customers c ON c.id = s.customer_id
   WHERE s.id=${submissionId};
@@ -1220,22 +1223,27 @@ export async function getSubmissionsCount(
 export async function getSubmissionById(id: string) {
   const rows = await sql`
     SELECT 
-        s.id              AS submission_id,
+        s.id AS submission_id,
         s.agent_id,
         s.status,
         s.admin_note,
         s.manager_note,
         s.created_at,
-        c.name            AS customer_name,
+        c.name AS customer_name,
         c.mobile,
         c.cust_code,
         c.branch_id,
-        td.document       AS document_name,
+        c.landline,
+        c.address,
+        c.owner_identity,
+        b.branch,
+        td.document AS document_name,
         td.is_valid
     FROM submission s
-    JOIN document d       ON d.submission_id = s.id
-    JOIN customers c      ON d.master_id = c.id
+    JOIN document d ON d.submission_id = s.id
+    JOIN customers c ON d.master_id = c.id
     JOIN tbl_documents td ON d.document_id = td.id
+    JOIN branches b ON b.id = c.branch_id
     WHERE s.id = ${id}
     ORDER BY td.document
   `;
@@ -1254,6 +1262,10 @@ export async function getSubmissionById(id: string) {
     mobile: first.mobile,
     cust_code: first.cust_code,
     branch_id: first.branch_id,
+    landline: first.landline,
+    address: first.address,
+    owner_identity: first.owner_identity,
+    branch: first.branch,
     documents: rows.map(r => ({
       document_name: r.document_name,
       is_valid: r.is_valid,

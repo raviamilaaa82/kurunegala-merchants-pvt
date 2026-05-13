@@ -3,8 +3,7 @@ import DownloadPDFButton from '@/app/ui/reports/pdf-report-download-button';
 import { Sumana } from "next/font/google";
 
 export default function SingleReportDetails({ submission }: { submission: any }) {
-    console.log("in single rport");
-    console.log(submission);
+
 
     return (
         <>
@@ -47,10 +46,18 @@ export default function SingleReportDetails({ submission }: { submission: any })
                     <span>{submission.mobile}</span>
 
                     <span className="text-gray-500">Branch</span>
-                    <span>{submission.branch_id}</span>
+                    <span>{submission.branch}</span>
 
-                    <span className="text-gray-500">Agent ID</span>
-                    <span>{submission.agent_id}</span>
+                    <span className="text-gray-500">Landline</span>
+                    <span>{submission.landline}</span>
+
+                    <span className="text-gray-500">Address</span>
+                    <span>{submission.address}</span>
+
+                    <span className="text-gray-500">Owner's ID</span>
+                    <span>{submission.owner_identity}</span>
+                    {/* <span className="text-gray-500">Agent ID</span>
+                    <span>{submission.agent_id}</span> */}
                 </div>
             </div>
 

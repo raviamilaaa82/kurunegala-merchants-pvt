@@ -126,8 +126,8 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                 <div className="rounded-md bg-gray-50 p-4 md:p-6">
 
                     <div className="mb-4">
-                        <label htmlFor="amount" className="mb-2 block text-sm font-medium">
-                            Customer name
+                        <label htmlFor="name" className="mb-2 block text-sm font-medium">
+                            Customer name (Shop Name)
                         </label>
                         <div className="relative mt-2 rounded-md">
                             <div className="relative">
@@ -161,7 +161,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="email" className="mb-2 block text-sm font-medium">
                             Customer email
                         </label>
                         <div className="relative mt-2 rounded-md">
@@ -214,7 +214,79 @@ export default function Form({ customer, submisnId, branches, types }: { custome
                         </div>
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="mobile" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="landline" className="mb-2 block text-sm font-medium">
+                            Customer Landline
+                        </label>
+                        <div className="relative mt-2 rounded-md">
+                            <div className="relative">
+                                <input
+                                    id="landline"
+                                    name="landline"
+                                    type="text"
+                                    placeholder="Enter customer landline"
+                                    className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                    aria-describedby="landline-error"
+                                    defaultValue={customer.landline}
+
+
+                                />
+                                {/* <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" /> */}
+                            </div>
+                        </div>
+                        <div id="landline-error" aria-live="polite" aria-atomic="true">
+                            {/* error handleg */}
+                        </div>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="address" className="mb-2 block text-sm font-medium">
+                            Customer Address
+                        </label>
+                        <div className="relative mt-2 rounded-md">
+                            <div className="relative">
+                                <input
+                                    id="address"
+                                    name="address"
+                                    type="text"
+                                    placeholder="Enter customer address"
+                                    className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                    aria-describedby="address-error"
+                                    defaultValue={customer.address}
+
+
+                                />
+                                {/* <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" /> */}
+                            </div>
+                        </div>
+                        <div id="address-error" aria-live="polite" aria-atomic="true">
+                            {/* error handleg */}
+                        </div>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="identity" className="mb-2 block text-sm font-medium">
+                            Owner's ID (NIC/Passport/Driving Licence)
+                        </label>
+                        <div className="relative mt-2 rounded-md">
+                            <div className="relative">
+                                <input
+                                    id="identity"
+                                    name="identity"
+                                    type="text"
+                                    placeholder="Enter customer NIC/Passport/Driving licence"
+                                    className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                    aria-describedby="identity-error"
+                                    defaultValue={customer.owner_identity}
+
+
+                                />
+                                {/* <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" /> */}
+                            </div>
+                        </div>
+                        <div id="identity-error" aria-live="polite" aria-atomic="true">
+                            {/* error handleg */}
+                        </div>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="code" className="mb-2 block text-sm font-medium">
                             Customer code
                         </label>
                         <div className="relative mt-2 rounded-md">
@@ -251,7 +323,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
 
                     <div className="mb-4">
 
-                        <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="branchid" className="mb-2 block text-sm font-medium">
                             Branch
 
                         </label>
@@ -303,7 +375,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
 
 
                     <div className="mb-4">
-                        <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="type" className="mb-2 block text-sm font-medium">
                             Type
                         </label>
                         <div className="relative">
@@ -391,7 +463,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
 
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="log" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="image" className="mb-2 block text-sm font-medium">
                             Profile Image
                         </label>
                         <ProfileImageUploader
@@ -416,7 +488,7 @@ export default function Form({ customer, submisnId, branches, types }: { custome
               disabled:cursor-not-allowed"
                         // disabled={isFirstFormEnabled}
                         >
-                            Update customer</Button>
+                            Next</Button>
                         {/* <UploadDocuments id={customerId} /> */}
                     </div>
                 </div>

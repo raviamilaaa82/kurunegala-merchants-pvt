@@ -477,6 +477,9 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
     const img_url = String(formData.get('profileImgeUrl') ?? '');
     const mobile = String(formData.get('mobile') ?? '0');
     const locationLink = String(formData.get('googleLink') ?? '0');
+    const landline = String(formData.get('landline') ?? '0');
+    const address = String(formData.get('address') ?? '0');
+    const identity = String(formData.get('identity') ?? '0');
     // const customer_code = String(formData.get('cust_code') ?? '');
 
 
@@ -486,10 +489,11 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
     try {
         const result = await sql.begin(async (txn) => {
             // 1. Insert customer
+            // name, email, image_url, id, mobile, loc_link, cust_code, branch_id, type_id, landline, address, owner_identity
             const [customer] = await txn`
             
-                INSERT INTO customers (name, email, image_url, mobile, loc_link,cust_code,branch_id,type_id)
-                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink},${cust_code},${branch_id},${type})
+                INSERT INTO customers (name, email, image_url, mobile, loc_link,cust_code,branch_id,type_id,landline,address,owner_identity)
+                VALUES (${name}, ${email}, ${img_url}, ${mobile}, ${locationLink},${cust_code},${branch_id},${type},${landline},${address},${identity})
                 RETURNING id
             `;
 
@@ -549,14 +553,16 @@ export async function updateCustomer(id: string, submisnId: string | undefined, 
     const mobile = String(formData.get('mobile') ?? '0');
     const locationLink = String(formData.get('googleLink') ?? '0');
     const customer_code = String(formData.get('cust_code') ?? '');
+    const landline = String(formData.get('landline') ?? '0');
+    const address = String(formData.get('address') ?? '0');
+    const identity = String(formData.get('identity') ?? '0');
 
     try {
 
         await sql`
         UPDATE customers
 	SET  name=${name}, email=${email}, image_url=${img_url}, mobile=${mobile}, loc_link=${locationLink},
-    cust_code=${customer_code}, branch_id=${branch_id},type_id=${type}
-	
+    cust_code=${customer_code}, branch_id=${branch_id},type_id=${type},landline=${landline},address=${address},owner_identity=${identity}	
 	WHERE id = ${id}   
   `;
     } catch (error) {
