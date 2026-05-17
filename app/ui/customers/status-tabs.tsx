@@ -39,12 +39,14 @@ export default function StatusTabs({ roleSlug, branch }: { roleSlug?: string, br
         rejected: 0,
         approved: 0,
     });
-
+    console.log("🧪 Component rendered. branch:", branch, "roleSlug:", roleSlug);
 
     useEffect(() => {
+        console.log("🧪 useEffect fired. branch:", branch, "roleSlug:", roleSlug);
         let es: EventSource;
 
         const connect = () => {
+            console.log("🧪 connect() called");
             // es = new EventSource("/api/notifications");
             es = new EventSource(`/api/notifications?branch=${branch}`);//for only that branch
             es.onopen = () => console.log("✅ SSE connected");       // is this printing?
