@@ -24,13 +24,31 @@ export function createNotificationListener(
     onNotify: (payload: string) => void,
     onError?: (err: Error) => void
 ) {
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Connecting to:', process.env.POSTGRES_URL);
+    // const listener = postgres(process.env.POSTGRES_URL!, {
+    //     ssl: process.env.NODE_ENV === "production" ? "require" : false,
+    //     max: 1,
+    //     fetch_types: false,
+    // });
     const listener = postgres(process.env.POSTGRES_URL!, {
-        ssl: process.env.NODE_ENV === "production" ? "require" : false,
+        ssl: process.env.NODE_ENV === "production"
+            ? { rejectUnauthorized: false }  // more permissive for VPS
+            : false,
         max: 1,
         fetch_types: false,
     });
 
-    listener.listen(channel, onNotify).catch((err) => {
+    // listener.listen(channel, onNotify).catch((err) => {
+    //     onError?.(err);
+    // });
+    listener.listen(channel, (payload) => {
+        console.log(`Notification received on ${channel}:`, payload);
+        onNotify(payload);
+    }).then(() => {
+        console.log(`Listening on channel: ${channel}`);  // confirms connection
+    }).catch((err) => {
+        console.error(`Listener failed on channel ${channel}:`, err);  // see exact error
         onError?.(err);
     });
 
