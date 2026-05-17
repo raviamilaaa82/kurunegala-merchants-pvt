@@ -13,21 +13,22 @@ export async function GET(
 
     const rows = await sql`
     SELECT
-        s.id              AS submission_id,
+        s.id AS submission_id,
         s.agent_id,
         s.status,
         s.admin_note,
         s.manager_note,
         s.created_at,
-        c.name            AS customer_name,
+        c.name AS customer_name,
         c.mobile,
         c.cust_code,
         c.branch_id,
-        td.document       AS document_name,
+        c.address,
+        td.document AS document_name,
         td.is_valid
     FROM submission s
-    JOIN document d       ON d.submission_id = s.id
-    JOIN customers c      ON d.master_id = c.id
+    JOIN document d ON d.submission_id = s.id
+    JOIN customers c ON d.master_id = c.id
     JOIN tbl_documents td ON d.document_id = td.id
     WHERE s.id = ${id}
     ORDER BY td.document
@@ -49,6 +50,7 @@ export async function GET(
         mobile: first.mobile,
         cust_code: first.cust_code,
         branch_id: first.branch_id,
+        address: first.address,
         documents: rows.map(r => ({
             document_name: r.document_name,
             is_valid: r.is_valid,
@@ -64,8 +66,8 @@ export async function GET(
             'Customer Name': data.customer_name,
             'Customer Code': data.cust_code,
             'Mobile': data.mobile,
+            'Address': data.address,
             'Status': data.status,
-            'Agent ID': data.agent_id,
             'Created At': new Date(data.created_at).toLocaleDateString(),
             'Admin Note': data.admin_note ?? '',
             'Manager Note': data.manager_note ?? '',

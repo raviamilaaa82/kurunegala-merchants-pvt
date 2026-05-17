@@ -27,7 +27,7 @@ const STATUS_MAP: Record<string, string> = {
     pending_admin: "pending",
     pending_manager: "pending",
 };
-export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
+export default function StatusTabs({ roleSlug, branch }: { roleSlug?: string, branch?: string }) {
     const [notification, setNotification] = useState<string | null>(null);//for listen notification
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -45,8 +45,8 @@ export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
         let es: EventSource;
 
         const connect = () => {
-            es = new EventSource("/api/notifications");
-
+            // es = new EventSource("/api/notifications");
+            es = new EventSource(`/api/notifications?branch=${branch}`);//for only that branch
             es.onopen = () => console.log("✅ SSE connected");       // is this printing?
 
             es.onmessage = (e) => {
@@ -70,10 +70,6 @@ export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
 
                 if (!shouldNotify) return;
 
-
-
-
-
                 const tabStatus = STATUS_MAP[data.status] ?? data.status;
 
                 setNotifCounts(prev => ({
@@ -91,7 +87,7 @@ export default function StatusTabs({ roleSlug }: { roleSlug?: string }) {
 
         connect();
         return () => es?.close();
-    }, []);
+    }, [branch, roleSlug]);
 
     const handleStatusChange = (newStatus: string) => {
         const params = new URLSearchParams(searchParams.toString()); // 👈 keep existing params

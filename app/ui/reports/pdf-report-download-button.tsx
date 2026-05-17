@@ -11,6 +11,7 @@ interface Submission {
     mobile: string;
     cust_code: string;
     branch_id: string;
+    address: string;
     documents: {
         document_name: string;
         is_valid: boolean;
@@ -48,7 +49,7 @@ export default function DownloadPDFButton({ id }: { id: string }) {
                 ['Customer Code', data.cust_code],
                 ['Mobile', data.mobile],
                 ['Status', data.status],
-                ['Agent ID', String(data.agent_id)],
+                ['Address', data.address],
                 ['Created At', new Date(data.created_at).toLocaleDateString()],
                 ['Admin Note', data.admin_note ?? '-'],
                 ['Manager Note', data.manager_note ?? '-'],
@@ -72,7 +73,7 @@ export default function DownloadPDFButton({ id }: { id: string }) {
             body: data.documents.map((d, i) => [
                 i + 1,
                 d.document_name,
-                d.is_valid ? '✓ Yes' : '✗ No',
+                d.is_valid ? 'Yes' : 'No',
             ]),
             theme: 'striped',
             headStyles: { fillColor: [37, 99, 235] },

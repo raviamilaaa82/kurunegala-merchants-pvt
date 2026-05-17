@@ -28,8 +28,9 @@ export const { auth, signIn, signOut } = NextAuth({
                             u.email,
                             u.name,
                             u.password,
-                            r.id           AS role_id,
-                            r.slug         AS role_slug,
+                            u.branch_id,
+                            r.id AS role_id,
+                            r.slug AS role_slug,
                             r.display_name AS role_name,
                             ARRAY_AGG(rp.permission) AS permissions
                         FROM users u
@@ -60,6 +61,7 @@ export const { auth, signIn, signOut } = NextAuth({
                         id: user.id,
                         email: user.email,
                         name: user.name,
+                        branch: user.branch_id,
                         roleId: user.role_id,
                         roleSlug: user.role_slug,
                         roleName: user.role_name,

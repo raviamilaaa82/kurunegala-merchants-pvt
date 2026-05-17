@@ -5,14 +5,27 @@ import { Suspense } from 'react';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { CreateType } from "@/app/ui/types/buttons";
 import Pagination from "@/app/ui/types/pagination";
-import { fetchTypePages } from "@/app/lib/data";
+import { fetchTypePages, fetchTypePagesByBranch } from "@/app/lib/data";
+import { auth } from "@/auth";
 
 export default async function Page(props: { searchParams?: Promise<{ query?: string, page?: string }> }) {
+    const session = await auth();
+    // const loggedInroleSlug = session?.user.roleSlug;
+    const branch = session?.user?.branch;
+    const loggedInroleSlug = session?.user.roleSlug;
 
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
     const currentPage = Number(searchParams?.page) || 1;
-    const totalPages = await fetchTypePages(query);
+    let totalPages = 0;
+    if (loggedInroleSlug === 'admin') {
+        totalPages = await fetchTypePagesByBranch(query, branch);
+
+    } else {
+        totalPages = await fetchTypePages(query);
+    }
+
+
 
     return (
         <div className="w-full">
@@ -24,7 +37,7 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 <CreateType />
             </div>
             <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-                <Table query={query} currentPage={currentPage} />
+                <Table query={query} currentPage={currentPage} roleSlug={loggedInroleSlug} branchId={branch} />
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages} />

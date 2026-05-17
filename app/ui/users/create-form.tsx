@@ -1,5 +1,5 @@
 'use client';
-import { Role } from '@/app/lib/definitions';
+import { Role, Branches } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
   EyeIcon,
@@ -11,9 +11,7 @@ import { createUser, UserState } from '@/app/lib/actions';
 import { useActionState, useEffect, useState } from 'react';
 
 
-
-
-export default function Form({ roles }: { roles: Role[] }) {
+export default function Form({ roles, branches }: { roles: Role[], branches: Branches[] }) {
   // const initialState: UserState = { message: null, errors: {} };
   const initialState: UserState = { status: null, errors: {}, message: null, error: null };
   const [state, formAction] = useActionState(createUser, initialState);
@@ -23,6 +21,43 @@ export default function Form({ roles }: { roles: Role[] }) {
   const [name, setName] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [selectedBranch, setSelectedBranch] = useState("");
+  const [selectedBranchId, setSelectedBranchId] = useState('');
+  const [branch, setBranch] = useState<string>('');
+  // const [userName, setCustomerCode] = useState<string>('');
+  const [error, setError] = useState("");
+  const [isCheckingUserName, setIsCheckingUserName] = useState(false);
+  const [userNameError, setUserNameError] = useState("");
+
+
+
+  useEffect(() => {
+    if (!userName) {
+      setUserNameError("");
+      return;
+    }
+    // if (!userName) return;
+    setIsCheckingUserName(true);
+    setUserNameError("");
+
+    const timer = setTimeout(() => {
+      fetch(`/api/users/check-username?uname=${userName}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.exists) {
+            setUserNameError("UserName already exists");
+          } else {
+            setUserNameError("");
+          }
+        }).finally(() => setIsCheckingUserName(false));
+    }, 500); // avoid spam
+
+    return () => clearTimeout(timer);
+  }, [userName]);
+
+
+
+
 
   useEffect(() => {
     if (state.status === 'error' && state.errors) {
@@ -34,6 +69,22 @@ export default function Form({ roles }: { roles: Role[] }) {
   }, [state.status, state.errors, state.message]);
 
 
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (isCheckingUserName || userNameError) {
+      e.preventDefault(); // ← block form submit
+      return;
+    }
+  };
+
+  const handleBranchChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = event.target.value;
+
+    setSelectedBranch(selectedValue);
+    setSelectedBranchId(event.target.value);
+
+  };
+
   const clearFieldError = (fieldName: string) => {
     setLocalErrors(prev => {
       const newErrors = { ...prev };
@@ -44,7 +95,7 @@ export default function Form({ roles }: { roles: Role[] }) {
   };
 
   return (
-    <form action={formAction} className="w-full sm:w-1/2 md:w-1/3 mx-auto">
+    <form action={formAction} onSubmit={handleSubmit} className="w-full sm:w-1/2 md:w-1/3 mx-auto">
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
 
         <div className="mb-4">
@@ -127,6 +178,7 @@ export default function Form({ roles }: { roles: Role[] }) {
               />
 
             </div>
+
           </div>
           <div id="username-error" aria-live="polite" aria-atomic="true">
             {localErrors.username &&
@@ -135,6 +187,12 @@ export default function Form({ roles }: { roles: Role[] }) {
                   {error}
                 </p>
               ))}
+            {isCheckingUserName && (
+              <p className="text-gray-400 text-xs">Checking username...</p>
+            )}
+            {userNameError && (
+              <p className="text-red-500 text-xs">{userNameError}</p>
+            )}
           </div>
         </div>
         <div className="mb-4">
@@ -209,6 +267,46 @@ export default function Form({ roles }: { roles: Role[] }) {
 
           </div>
         </div>
+        <div className="mb-4">
+          <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+            Branch
+
+          </label>
+          <div className="relative">
+            <select
+              id="branch_id"
+              name="branch"
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              defaultValue=""
+              aria-describedby="branch-error"
+              // onChange={handleBranchChange}
+              onChange={(e) => {
+                handleBranchChange(e);
+                setBranch(e.target.value)
+                clearFieldError('branch');
+              }
+              }
+            >
+              <option value="" disabled>
+                Select a branch
+              </option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.branch}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div id="branch-error" aria-live="polite" aria-atomic="true">
+            {localErrors.branch &&
+              localErrors.branch.map((error: string) => (
+                <p className="mt-2 text-xs text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
+        </div>
 
       </div>
       {localMessage && (
@@ -221,7 +319,7 @@ export default function Form({ roles }: { roles: Role[] }) {
         >
           Cancel
         </Link>
-        <Button type="submit">Create User</Button>
+        <Button type="submit" disabled={isCheckingUserName || !!userNameError} className="disabled:opacity-50 disabled:cursor-not-allowed">Create User</Button>
       </div>
     </form>
   );

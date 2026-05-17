@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 export default function BranchDropDowns({ branches }: { branches: Branches[] }) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const currentBranch = searchParams.get('branch') || 'all';
+    const currentBranch = searchParams.get('branch') || '1';
 
 
     const handleBranchChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -16,7 +16,7 @@ export default function BranchDropDowns({ branches }: { branches: Branches[] }) 
         const params = new URLSearchParams(searchParams.toString());
         params.set('branch', event.target.value);
         params.set('page', '1');
-        router.push(`/dashboard/customers?${params.toString()}`);
+        router.push(`/dashboard/history?${params.toString()}`);
     };
 
 
@@ -38,9 +38,7 @@ export default function BranchDropDowns({ branches }: { branches: Branches[] }) 
                 // disabled={isDropDownEnabled}
                 >
 
-                    <option key="all" value="all">
-                        All
-                    </option>
+
                     {branches.map((branch) => (
                         <option key={branch.id} value={branch.id}>
                             {branch.branch}

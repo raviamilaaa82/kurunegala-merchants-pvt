@@ -4,6 +4,7 @@ import 'next-auth/jwt';
 declare module 'next-auth' {
     interface User {
         name?: string;
+        branch?: string;
         roleId?: number;
         roleSlug?: string;
         roleName?: string;
@@ -15,6 +16,7 @@ declare module 'next-auth' {
             id: string;
             name?: string;
             email: string;
+            branch?: string;
             roleId?: number;
             roleSlug?: string;
             roleName?: string;

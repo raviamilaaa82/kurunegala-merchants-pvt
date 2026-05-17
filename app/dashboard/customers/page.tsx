@@ -28,6 +28,7 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
     const agentRoleId = session?.user.roleId;
     const userName = session?.user.name;
     const loggedInroleSlug = session?.user.roleSlug;
+    const branch = session?.user?.branch;
 
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
@@ -58,15 +59,10 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
 
             {/* className="mt-4 flex flex-col gap-4 md:flex-row md:justify-between md:items-center" */}
             <div className="mt-4 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
-                <StatusTabs roleSlug={loggedInroleSlug} />
+                <StatusTabs roleSlug={loggedInroleSlug} branch={branch} />
                 <BranchCompanyFilter branches={branches}
-                    allTypes={companyType} />
-                {/* <div className="md:ml-auto">
-                    <BranchDropDowns branches={branches} />
-                </div>
-                <div className="md:ml-auto">
-                    <CompanyTypesDropDown types={companyType} />
-                </div> */}
+                    allTypes={companyType} branchId={branch} roleSlug={loggedInroleSlug} />
+
             </div>
 
             <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">

@@ -17,7 +17,34 @@ export default function Form({ companies }: { companies: Company[] }) {
   const [localMessage, setLocalMessage] = useState<string | null>(null);
   const [company, setCompany] = useState<string>('');
   const [branch, setBranch] = useState<string>('');
+  const [isCheckingBranchName, setIsCheckingBranchName] = useState(false);
+  const [branchNameError, setBranchNameError] = useState("");
 
+
+
+  useEffect(() => {
+    if (!branch) {
+      setBranchNameError("");
+      return;
+    }
+    // if (!userName) return;
+    setIsCheckingBranchName(true);
+    setBranchNameError("");
+
+    const timer = setTimeout(() => {
+      fetch(`/api/branches/check-branchname?branch=${branch}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.exists) {
+            setBranchNameError("Branch Name already exists");
+          } else {
+            setBranchNameError("");
+          }
+        }).finally(() => setIsCheckingBranchName(false));
+    }, 500); // avoid spam
+
+    return () => clearTimeout(timer);
+  }, [branch]);
 
   useEffect(() => {
     if (state.status === 'error' && state.errors) {
@@ -127,6 +154,13 @@ export default function Form({ companies }: { companies: Company[] }) {
                   {error}
                 </p>
               ))}
+
+            {isCheckingBranchName && (
+              <p className="text-gray-400 text-xs">Checking branch name...</p>
+            )}
+            {branchNameError && (
+              <p className="text-red-500 text-xs">{branchNameError}</p>
+            )}
           </div>
         </div>
 
@@ -142,7 +176,7 @@ export default function Form({ companies }: { companies: Company[] }) {
         >
           Cancel
         </Link>
-        <Button type="submit">Create Branch</Button>
+        <Button type="submit" disabled={isCheckingBranchName || !!branchNameError} className="disabled:opacity-50 disabled:cursor-not-allowed">Create Branch</Button>
       </div>
     </form>
   );

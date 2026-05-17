@@ -15,21 +15,22 @@ export async function POST(req: NextRequest) {
 
         const rows = await sql`
       SELECT 
-          s.id              AS submission_id,
+          s.id AS submission_id,
           s.agent_id,
           s.status,
           s.admin_note,
           s.manager_note,
           s.created_at,
-          c.name            AS customer_name,
+          c.name AS customer_name,
           c.mobile,
           c.cust_code,
           c.branch_id,
-          td.document       AS document_name,
+          c.address,
+          td.document AS document_name,
           td.is_valid
       FROM submission s
-      JOIN document d       ON d.submission_id = s.id
-      JOIN customers c      ON d.master_id = c.id
+      JOIN document d ON d.submission_id = s.id
+      JOIN customers c ON d.master_id = c.id
       JOIN tbl_documents td ON d.document_id = td.id
       WHERE s.id =ANY(${ids}::int[])
       ORDER BY s.id, td.document
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
                     'Customer Code': row.cust_code,
                     'Mobile': row.mobile,
                     'Branch': row.branch_id,
-                    'Agent ID': row.agent_id,
+                    'Address': row.address,
                     'Status': row.status,
                     'Created At': new Date(row.created_at).toLocaleDateString(),
                     'Admin Note': row.admin_note ?? '',

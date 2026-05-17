@@ -6,7 +6,7 @@ import {
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
 import { fetchFilteredBranch } from '@/app/lib/data';
-import { DisableBranch } from '@/app/ui/branches/buttons';
+import { DisableBranch, UpdateBranch } from '@/app/ui/branches/buttons';
 import { Badge } from "@/components/ui/badge";
 
 export default async function BranchesTable({
@@ -147,7 +147,7 @@ export default async function BranchesTable({
 
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         <div className="flex justify-end gap-3">
-                          {/* <UpdateBranch id={branch.id.toString()} /> */}
+                          <UpdateBranch id={branch.id.toString()} />
                           <DisableBranch id={branch.id.toString()} is_valid={branch.is_valid} />
                         </div>
                       </td>

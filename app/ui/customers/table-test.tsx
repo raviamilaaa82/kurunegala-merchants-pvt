@@ -14,31 +14,15 @@ import SubmissionRow from './submission-row';
 export default async function CustomersTable({
   query,
   currentPage,
-  // status,
-  // userId,
-  // roleId,
   roleSlug,
-  // branch_id
-  // customers,
   custWithSubmissions
 }: {
   query: string,
   currentPage: number,
-  // status: string,
-  // userId?: string,
-  // roleId?: number,
   roleSlug?: string,
-  // branch_id: string,
-  custWithSubmissions: CustTableTypeWithSubmission[]
-
-
-  // customers: FormattedCustomersTable[];
+  custWithSubmissions: CustTableTypeWithSubmission[],
 }) {
 
-
-  // const customers = await fetchFilteredCustomers(query);
-  // const { custWithSubmissions, totalPages } = await fetchFilteredSubmission(query, currentPage, status, userId, roleId, branch_id);
-  // const custWithSubmissions = await fetchFilteredSubmission(query, currentPage, status, userId, roleId, branch_id);
   return (
     <div className="w-full">
       {/* <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
@@ -51,7 +35,6 @@ export default async function CustomersTable({
             <div className="overflow-hidden rounded-md bg-gray-50 p-2 md:pt-0">
               <div className="md:hidden">
                 {custWithSubmissions?.map((submission) => (
-                  // <CustomerRow key={customer.id} customer={customer} variant="mobile" />
                   <SubmissionRow key={submission.submission_id} submission={submission} loggedInRoleSlug={roleSlug} variant="mobile" />
                 ))}
               </div>
@@ -65,7 +48,7 @@ export default async function CustomersTable({
                       MOBILE
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      LOCATION
+                      ADDRESS
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
                       CUST. CODE
@@ -80,13 +63,9 @@ export default async function CustomersTable({
                 </thead>
 
                 <tbody className="divide-y divide-gray-200 text-gray-900">
-                  {/* {customers.map((customer) => (
 
-                    <CustomerRow key={customer.id} customer={customer} variant="desktop" />
-
-                  ))} */}
                   {custWithSubmissions?.map((submission) => (
-                    // <CustomerRow key={customer.id} customer={customer} variant="mobile" />
+
                     <SubmissionRow key={submission.submission_id} submission={submission} loggedInRoleSlug={roleSlug} variant="desktop" />
                   ))}
                 </tbody>

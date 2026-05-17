@@ -5,6 +5,12 @@ export const runtime = "nodejs";  // must be nodejs, NOT edge
 
 export async function GET(req: Request) {
     console.log("✅ SSE connected");
+
+    // ← Get branch from query param
+    const { searchParams } = new URL(req.url);
+    const branch = searchParams.get('branch');
+
+
     const stream = new ReadableStream({
         start(controller) {
             const send = (payload: string) => {
@@ -32,7 +38,22 @@ export async function GET(req: Request) {
             }, 30000);
             const { unlisten } = createNotificationListener(
                 "submission_status",        // channel name — must match your NOTIFY
-                (payload) => send(payload),
+                // (payload) => send(payload),
+                (payload) => {
+                    try {
+                        const data = JSON.parse(payload);
+
+                        // ← Only forward if branch matches (or no branch filter)
+                        if (branch && data.branch_id && String(data.branch_id) !== String(branch)) {
+                            console.log(`🚫 Skipping notification for branch ${data.branch_id}, client is branch ${branch}`);
+                            return;
+                        }
+
+                        send(payload);
+                    } catch (err) {
+                        console.error("Failed to parse payload:", err);
+                    }
+                },
                 (err) => console.error("Listener error:", err)
             );
 

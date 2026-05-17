@@ -80,7 +80,7 @@ export default function TableWrapper({ submissions }: { submissions: any[] }) {
                     onClick={exportSelected}
                     disabled={!selected.length}
                     className="mt-1 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg
-                     hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                     hover:bg-blue-600  disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     Export Selected to Excel
                 </button>

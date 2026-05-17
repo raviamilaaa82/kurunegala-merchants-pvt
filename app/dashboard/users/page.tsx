@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { CreateUser } from "@/app/ui/users/buttons";
 import Pagination from "@/app/ui/users/pagination";
-import { fetchUsersPages } from "@/app/lib/data";
+import { fetchUsersPages, fetchUsersPagesByBranch } from "@/app/lib/data";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
@@ -21,11 +21,23 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
     const agentRoleId = session?.user.roleId;
     const userName = session?.user.name;
     const loggedInroleSlug = session?.user.roleSlug;
+    const branch = session?.user?.branch;
+    //for agent no need to go to table and create user tabs
+    if (loggedInroleSlug === 'agent') {
+        redirect(`/dashboard/users/${agentId}/edit`);
+    }
 
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
     const currentPage = Number(searchParams?.page) || 1;
-    const totalPages = await fetchUsersPages(query);
+    // now if you need to show all users to manager then run fetchUsersPages
+    let totalPages = 0;
+    if (loggedInroleSlug === 'admin') {
+        totalPages = await fetchUsersPagesByBranch(query, branch);
+    } else {
+        totalPages = await fetchUsersPages(query);
+    }
+
 
     return (
         <div className="w-full">
@@ -37,7 +49,7 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 <CreateUser />
             </div>
             <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-                <Table query={query} currentPage={currentPage} roleSlug={loggedInroleSlug} userId={agentId} />
+                <Table query={query} currentPage={currentPage} roleSlug={loggedInroleSlug} userId={agentId} branchId={branch} />
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages} />

@@ -4,7 +4,7 @@ import Search from '@/app/ui/search';
 import {
   User
 } from '@/app/lib/definitions';
-import { fetchFilteredUsers } from '@/app/lib/data';
+import { fetchFilteredUsers, fetchFilteredUsersByBranch } from '@/app/lib/data';
 import { UpdateUsers, DisableUsers } from '@/app/ui/users/buttons';
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,18 +17,23 @@ export default async function UserTable({
   query,
   currentPage,
   roleSlug,
-  userId
+  userId,
+  branchId
 
 }: {
   query: string,
   currentPage: number,
   roleSlug?: string,
   userId: string,
+  branchId?: string,
 
 }) {
-
-  const users = await fetchFilteredUsers(query, currentPage);
-
+  let users: User[] = [];
+  if (roleSlug === 'admin') {
+    users = await fetchFilteredUsersByBranch(query, currentPage, branchId);
+  } else {
+    users = await fetchFilteredUsers(query, currentPage);
+  }
   return (
     <div className="w-full">
       {/* <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
@@ -81,19 +86,20 @@ export default async function UserTable({
                     <div className="flex w-full items-center justify-between border-b py-5">
 
                       <div className="ml-auto">
-                        {
+                        {/* {
 
                           userId === user?.id ? (<UpdateUsers id={user.id.toString()} />) : null
 
-                        }
+                        } */}
 
-
-                        {roleSlug !== "agent" ? (
+                        <UpdateUsers id={user.id.toString()} />
+                        <DisableUsers id={user.id} is_enabled={user.is_enabled} />
+                        {/* {roleSlug !== "agent" ? (
 
                           <DisableUsers id={user.id} is_enabled={user.is_enabled} />
 
                         ) : null
-                        }
+                        } */}
 
 
                       </div>
@@ -149,16 +155,18 @@ export default async function UserTable({
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
 
                         <div className="flex justify-end gap-3">
-                          {
+                          {/* {
 
                             userId === user?.id ? (<UpdateUsers id={user.id.toString()} />) : null
 
-                          }
+                          } */}
+                          <UpdateUsers id={user.id.toString()} />
+                          <DisableUsers id={user.id} is_enabled={user.is_enabled} />
 
-                          {roleSlug !== "agent" ? (
+                          {/* {roleSlug !== "agent" ? (
                             <DisableUsers id={user.id} is_enabled={user.is_enabled} />
                           ) : null
-                          }
+                          } */}
                         </div>
                       </td>
                     </tr>

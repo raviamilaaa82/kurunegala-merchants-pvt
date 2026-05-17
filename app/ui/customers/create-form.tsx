@@ -1,31 +1,27 @@
 'use client';
 import { Branches, Types } from '@/app/lib/definitions';
-
 import { Button } from '@/app/ui/button';
 import { createCustomer, CustomerState, } from '@/app/lib/actions';
 import { useActionState, useEffect, useState, } from 'react';
 import CaptureLocationButton from './capture_location';
 import { useRouter } from 'next/navigation';
 import MapPicker from './map-picker';
-
 import ProfileImageUploader from './profile-image-uploader';
 import { error } from 'console';
 
 
+export default function Form({ branches, types, branch, roleSlug }: { branches: Branches[], types: Types[], branch?: string, roleSlug?: string }) {
 
-
-
-export default function Form({ branches, types }: { branches: Branches[], types: Types[] }) {
   const initialState: CustomerState = { status: null, errors: {}, message: null, error: null };
   const [state, formAction] = useActionState(createCustomer, initialState);
   const [customerCode, setCustomerCode] = useState<string>('');
 
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
-  // const [localErrors, setLocalErrors] = useState<{ name?: string[]; email?: string[] } | null>(null);
+
   const [localErrors, setLocalErrors] = useState<Record<string, string[]>>({});
   const [googleLink, setGoogleLink] = useState("");
-  // const [localErrors, setLocalErrors] = useState<CustomerErrors>({});
+
   const [customerId, setCustomerId] = useState<string>('100');
   const [custName, setCustName] = useState<string | null>(null);
   const [submissionId, setSubmissionId] = useState<number | null>(null);//setting submissionid
@@ -33,11 +29,26 @@ export default function Form({ branches, types }: { branches: Branches[], types:
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [profileImgUrl, setProfileImgUrl] = useState<string>('');
-  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);//from load type drop down according to branch drop down select
+  // const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);//from load type drop down according to branch drop down select
 
 
   const router = useRouter();
 
+  const getFilteredBranches = () => {
+
+    if ((roleSlug === 'agent' || roleSlug === 'admin') && branch) {
+      return branches.filter(b => b.id === Number(branch));
+    }
+    return branches;
+  };
+
+  const filteredBranches = getFilteredBranches();
+  const [selectedBranchId, setSelectedBranchId] = useState(() => {
+    if ((roleSlug === 'agent' || roleSlug === 'admin') && branch) {
+      return Number(branch);
+    }
+    return null;
+  });
   //loading company type dropdown according to branch dropdown selected value
   const filteredTypes = selectedBranchId
     ? types.filter((t) => Number(t.branch_id) === selectedBranchId)
@@ -48,8 +59,6 @@ export default function Form({ branches, types }: { branches: Branches[], types:
       setLocalErrors(state.errors);
     }
   }, [state.status, state.errors]);
-
-
 
 
   useEffect(() => {
@@ -373,19 +382,19 @@ export default function Form({ branches, types }: { branches: Branches[], types:
                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 defaultValue=""
                 aria-describedby="branch-error"
-                // onChange={handleBranchesChange}
+
                 onChange={(e) => {
                   handleBranchesChange(e); // ✅ keep your existing handler
                   setSelectedBranchId(Number(e.target.value) || null); // ✅ add this
                 }}
-              // disabled={isDropDownEnabled}
+
               >
                 <option value="" disabled>
                   Select a branch
                 </option>
-                {branches.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.branch}
+                {filteredBranches.map((bran) => (
+                  <option key={bran.id} value={bran.id}>
+                    {bran.branch}
                   </option>
                 ))}
               </select>
@@ -489,7 +498,7 @@ export default function Form({ branches, types }: { branches: Branches[], types:
 
           <div className="mb-4">
             <label htmlFor="image" className="mb-2 block text-sm font-medium">
-              Logo Image
+              OUTLET Image
             </label>
             <ProfileImageUploader
               // currentImageUrl="/uploads/profiles/existing.jpg" // optional

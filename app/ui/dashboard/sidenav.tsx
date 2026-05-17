@@ -14,11 +14,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 const links = [
   { name: 'Home', href: '/dashboard', permission: null },
-  // {
-  //   name: 'Invoices',
-  //   href: '/dashboard/invoices',
-  //   icon: DocumentDuplicateIcon,
-  // },
+
   { name: 'Customers', href: '/dashboard/customers', permission: null },
   { name: 'Documents', href: '/dashboard/documents', permission: 'manage:documents' },
   { name: 'Users', href: '/dashboard/users', permission: 'manage:users' },

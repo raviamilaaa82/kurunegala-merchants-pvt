@@ -465,32 +465,88 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
 
 
     const custWithSubmissions = await sql<CustTableTypeWithSubmission[]>`
-     SELECT 
-      s.id AS submission_id,
-      s.status,
-      s.admin_note,
-      s.manager_note,
-      s.created_at,
-      c.id AS customer_id,
-      c.name AS customer_name,
-      c.email AS customer_email,
-      c.image_url,
-      c.mobile AS customer_mobile,
-      c.loc_link,
-      c.cust_code,
-      r.slug AS role_slug,            
-      r.display_name AS role_name    
+    SELECT 
+    s.id AS submission_id,
+    s.status,
+    s.admin_note,
+    s.manager_note,
+    s.created_at,
+    c.id AS customer_id,
+    c.name AS customer_name,
+    c.email AS customer_email,
+    c.image_url,
+    c.mobile AS customer_mobile,
+    c.loc_link,
+    c.cust_code,
+    c.address,
+    r.slug AS role_slug,            
+    r.display_name AS role_name    
+FROM submission s
+LEFT JOIN customers c ON c.id = s.customer_id
+LEFT JOIN users u ON u.id::text = s.agent_id::text
+LEFT JOIN roles r ON r.id = u.role_id
+LEFT JOIN users me ON me.id::text = ${userId}::text   -- ← join logged-in user to get their branch
+WHERE (
+    c.name ILIKE ${`%${query}%`} OR
+    c.cust_code ILIKE ${`%${query}%`} OR
+    c.mobile ILIKE ${`%${query}%`}
+)
+AND s.status::text = ANY(${statusFilter}::text[])
+
+-- ← Branch isolation: customer's branch must match logged-in user's branch
+AND c.branch_id::text = me.branch_id::text
+
+${branchId && branchId !== "all"
+        ? sql`AND c.branch_id::text = ${branchId}::text`
+        : sql``
+      }
+${typeId && typeId !== "all"
+        ? sql`AND c.type_id::text = ${typeId}::text`
+        : sql``
+      }
+AND (
+    CASE
+        -- DRAFT rules
+        WHEN s.status = 'draft' AND ${isAgentOrDraftOnly} THEN
+            s.agent_id::text = ${userId}::text          -- agent: own drafts only
+            OR r.slug IN ('admin', 'manager')     -- ← agents see admin/manager drafts 
+
+        WHEN s.status = 'draft' THEN
+            s.agent_id::text = ${userId}::text          -- admin/manager: own drafts only          
+
+        -- NON-DRAFT rules
+        WHEN ${isAgentOrDraftOnly} THEN
+            s.agent_id::text = ${userId}::text          -- agent: own records only
+            OR (
+                s.status::text IN ('admin_rejected', 'manager_rejected')
+                AND (
+                    s.agent_id::text = ${userId}::text
+                    OR r.slug IN ('admin', 'manager')
+                )
+            )
+
+        ELSE TRUE   -- admin/manager: see all — but SAME branch only (enforced by branch filter above)
+    END
+)
+ORDER BY s.id DESC
+LIMIT ${ITEMS_PER_PAGE}
+OFFSET ${offset}
+    `;
+
+    const countData = await sql`
+  SELECT COUNT(DISTINCT s.id) AS total
   FROM submission s
   LEFT JOIN customers c ON c.id = s.customer_id
   LEFT JOIN users u ON u.id::text = s.agent_id::text
   LEFT JOIN roles r ON r.id = u.role_id
+  LEFT JOIN users me ON me.id::text = ${userId}::text   -- ← add this
   WHERE (
       c.name ILIKE ${`%${query}%`} OR
       c.cust_code ILIKE ${`%${query}%`} OR
       c.mobile ILIKE ${`%${query}%`}
-     
   )
   AND s.status::text = ANY(${statusFilter}::text[])
+  AND c.branch_id::text = me.branch_id::text            -- ← add this
   ${branchId && branchId !== "all"
         ? sql`AND c.branch_id::text = ${branchId}::text`
         : sql``
@@ -499,69 +555,29 @@ export async function fetchFilteredSubmission(query: string, currentPage: number
         ? sql`AND c.type_id::text = ${typeId}::text`
         : sql``
       }
-    AND(
+  AND (
       CASE
-        --DRAFT rules
-        WHEN s.status = 'draft' AND ${isAgentOrDraftOnly} THEN 
-            s.agent_id:: text = ${userId}:: text-- own draft
-            OR r.slug IN('admin', 'manager')-- OR created by admin / manager
-        WHEN s.status = 'draft' THEN 
-            s.agent_id:: text = ${userId}:: text-- admin / manager: own drafts only
-
-        --NON - DRAFT rules
-        WHEN ${isAgentOrDraftOnly} THEN 
-            s.agent_id:: text = ${userId}:: text-- agent: own records only
-            OR (
-            s.status::text IN ('admin_rejected', 'manager_rejected')
-            AND (
-                s.agent_id::text = ${userId}::text  -- either they submitted it
-                OR r.slug IN ('admin', 'manager')   -- OR it was created by admin/manager
-            )
-        )
-        ELSE TRUE-- admin / manager: see all
-    END
-    )
-    ORDER BY s.id DESC
-  LIMIT ${ITEMS_PER_PAGE}
-  OFFSET ${offset}
-    `;
-
-
-    const countData = await sql`
-  SELECT COUNT(DISTINCT s.id) AS total
-  FROM submission s
-  LEFT JOIN customers c ON c.id = s.customer_id
-  LEFT JOIN users u ON u.id:: text = s.agent_id:: text
-  LEFT JOIN roles r ON r.id = u.role_id
-    WHERE(
-      c.name ILIKE ${`%${query}%`} OR
-  c.cust_code ILIKE ${`%${query}%`} OR
-  c.mobile ILIKE ${`%${query}%`}
+          WHEN s.status = 'draft' AND ${isAgentOrDraftOnly} THEN
+              s.agent_id::text = ${userId}::text
+          WHEN s.status = 'draft' THEN
+              s.agent_id::text = ${userId}::text
+              OR r.slug IN ('admin', 'manager')
+          WHEN ${isAgentOrDraftOnly} THEN
+              s.agent_id::text = ${userId}::text
+              OR (
+                  s.status::text IN ('admin_rejected', 'manager_rejected')
+                  AND (
+                      s.agent_id::text = ${userId}::text
+                      OR r.slug IN ('admin', 'manager')
+                  )
+              )
+          ELSE TRUE
+      END
   )
-  AND s.status:: text = ANY(${statusFilter}:: text[])
-  ${branchId && branchId !== "all"
-        ? sql`AND c.branch_id::text = ${branchId}::text`
-        : sql``
-      }
-     ${typeId && typeId !== "all"
-        ? sql`AND c.type_id::text = ${typeId}::text`
-        : sql``
-      }
-  AND(
-    CASE
-        WHEN s.status = 'draft' AND ${isAgentOrDraftOnly} THEN 
-            s.agent_id:: text = ${userId}:: text
-            OR r.slug IN('admin', 'manager')
-        WHEN s.status = 'draft' THEN 
-            s.agent_id:: text = ${userId}:: text
-        WHEN ${isAgentOrDraftOnly} THEN 
-            s.agent_id:: text = ${userId}:: text
-        ELSE TRUE
-    END
-  )
-    `;
+`;
 
     const totalPages = Math.ceil(Number(countData[0].total) / ITEMS_PER_PAGE);
+
 
     return { custWithSubmissions, totalPages };
   } catch (err) {
@@ -874,15 +890,17 @@ export async function fetchCustomerById(id: string) {
 
 //need to check
 
-export async function fetchFilteredUsers(query: string, currentPage: number) {
+export async function fetchFilteredUsersByBranch(query: string, currentPage: number, branchId?: string) {
   try {
+    const branchIdNum = Number(branchId);
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     const data = await sql<User[]>`
 		SELECT
-        id, name, email,is_enabled,phone,user_name
+        id, name, email,is_enabled,phone,user_name,role_id, branch_id
       FROM users			
 		WHERE
-		  name ILIKE ${`%${query}%`} 
+   branch_id=${branchIdNum} 
+		AND name ILIKE ${`%${query}%`} 
 		
 		ORDER BY id ASC
     LIMIT ${ITEMS_PER_PAGE}
@@ -896,9 +914,49 @@ OFFSET ${offset}
   }
 }
 
+export async function fetchFilteredUsers(query: string, currentPage: number) {
+  try {
+
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    const data = await sql<User[]>`
+		SELECT
+        id, name, email,is_enabled,phone,user_name,role_id, branch_id
+      FROM users			
+		WHERE  
+		 name ILIKE ${`%${query}%`} 
+		
+		ORDER BY id ASC
+    LIMIT ${ITEMS_PER_PAGE}
+OFFSET ${offset}
+	  `;
+
+    return data;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch user table.');
+  }
+}
+
+export async function fetchUsersPagesByBranch(query: string, branch?: string) {
+  try {
+    const branchIdNum = Number(branch);
+    const data = await sql`SELECT COUNT(*) AS total FROM users WHERE branch_id=${branchIdNum} 
+		AND name ILIKE ${`%${query}%`}`;
+
+    const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of users.');
+  }
+
+}
+
 export async function fetchUsersPages(query: string) {
   try {
-    const data = await sql`SELECT COUNT(*) AS total FROM users WHERE name ILIKE ${`%${query}%`}`;
+
+    const data = await sql`SELECT COUNT(*) AS total FROM users WHERE  
+		 name ILIKE ${`%${query}%`}`;
 
     const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
@@ -915,7 +973,7 @@ export async function fetchUserById(id: string) {
   try {
     const data = await sql<User[]>`
   SELECT
-        id, name, email,is_enabled,phone,user_name
+        id, name, email,is_enabled,phone,user_name,branch_id
       FROM users			
 		WHERE
 		  id= ${id};		
@@ -1047,7 +1105,21 @@ ORDER BY id ASC	`;
     throw new Error('Failed to fetch branches table.');
   }
 }
+export async function fetcBranchById(id: string) {
 
+  try {
+    const data = await sql<Branches[]>`
+      SELECT id, branch, is_valid, branch_code, com_id
+	FROM branches WHERE id = ${id} AND is_valid='true';
+    `;
+    return data[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoice.');
+
+  }
+
+}
 export async function fetchTypes() {
 
   try {
@@ -1062,9 +1134,36 @@ ORDER BY id ASC	`;
   }
 }
 
+export async function fetchTypeById(id: string) {
+
+  try {
+    const data = await sql<Types[]>`
+SELECT id, type, branch_id, is_valid
+	FROM types WHERE id = ${id} AND is_valid='true'
+ORDER BY id ASC	`;
+    return data[0];
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch branches table.');
+  }
+}
+
 export async function fetchTypePages(query: string) {
   try {
     const data = await sql`SELECT COUNT(*) AS total FROM types WHERE type ILIKE ${`%${query}%`}`;
+
+    const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of customers.');
+  }
+
+}
+export async function fetchTypePagesByBranch(query: string, branch?: string) {
+  try {
+    const branchIdNum = Number(branch);
+    const data = await sql`SELECT COUNT(*) AS total FROM types WHERE branch_id=${branchIdNum} AND type ILIKE ${`%${query}%`}`;
 
     const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
@@ -1103,10 +1202,41 @@ export async function fetchFilteredTypes(query: string, currentPage: number) {
   }
 }
 
+export async function fetchFilteredTypesByBranch(query: string, currentPage: number, branch?: string) {
+  try {
+    const branchIdNum = Number(branch);
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    const data = await sql<Types[]>`
+          SELECT 
+              t.id,
+              t.type,
+              t.is_valid,    
+                  t.branch_id,                 
+              b.branch
+              
+          FROM types t
+          JOIN branches b ON t.branch_id = b.id
+          WHERE
+          t.branch_id=${branchIdNum} AND
+                t.type ILIKE ${`%${query}%`} 
+          ORDER BY id ASC	
+          LIMIT ${ITEMS_PER_PAGE}
+          OFFSET ${offset}	
+	  `;
+    return data;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch branches table.');
+  }
+}
 
-export async function fetchUserActivity(query: string, currentPage: number) {
+
+export async function fetchUserActivity(query: string, currentPage: number, branchId: string) {
 
   try {
+
+    // const branchIdNum = Number(branchId);
+    const branchIdNum = Number(branchId || '1');
     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
     const data = await sql<ActivityHistory[]>`
         SELECT 
@@ -1120,12 +1250,15 @@ export async function fetchUserActivity(query: string, currentPage: number) {
         LEFT JOIN users u ON u.id::text = ua.user_id
         LEFT JOIN roles r ON r.id = u.role_id
         WHERE 
+        u.branch_id = ${branchIdNum} AND
+        (
         ua.user_name ILIKE ${`%${query}%`} OR
         ua.page ILIKE ${`%${query}%`} OR
          ua.created_at::text ILIKE ${`%${query}%`} OR
          r.display_name ILIKE ${`%${query}%`}
+         )
         ORDER BY ua.created_at DESC
-        LIMIT 100
+        LIMIT ${ITEMS_PER_PAGE}
         OFFSET ${offset}
     `;
     return data;
@@ -1140,19 +1273,27 @@ export async function fetchUserActivity(query: string, currentPage: number) {
 }
 
 
-export async function fetchUserActivityPages(query: string) {
+export async function fetchUserActivityPages(query: string, branch_id?: string) {
   try {
+
+    // const branchIdNum = Number(branch_id);
+    const branchIdNum = Number(branch_id || '1');
+
     const data = await sql`
-        SELECT COUNT(*) AS total
-        FROM user_activity ua
-        LEFT JOIN users u ON u.id::text = ua.user_id
-        LEFT JOIN roles r ON r.id = u.role_id
-        WHERE 
-        ua.user_name ILIKE ${`%${query}%`} OR
-        ua.page ILIKE ${`%${query}%`} OR
-         ua.created_at::text ILIKE ${`%${query}%`} OR
-         r.display_name ILIKE ${`%${query}%`}         
-           `;
+           SELECT COUNT(*) AS total
+      FROM user_activity ua
+      LEFT JOIN users u ON u.id::text = ua.user_id
+      LEFT JOIN roles r ON r.id = u.role_id
+      WHERE 
+        u.branch_id = ${branchIdNum} AND
+        (
+          ua.user_name ILIKE ${`%${query}%`} OR
+          ua.page ILIKE ${`%${query}%`} OR
+          ua.created_at::text ILIKE ${`%${query}%`} OR
+          r.display_name ILIKE ${`%${query}%`}
+        )    
+          
+    `;
 
     const totalPages = Math.ceil(Number(data[0].total) / ITEMS_PER_PAGE);
     return totalPages;
@@ -1187,6 +1328,7 @@ export async function getSubmissionsByStatus(
         c.mobile,
         c.cust_code,
         c.branch_id,
+        c.address,
         COUNT(d.id)         AS document_count
     FROM submission s
     JOIN document d       ON d.submission_id = s.id

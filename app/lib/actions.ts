@@ -100,6 +100,9 @@ const UserSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
     username: z.string().min(6, "Username must be at least 6 characters").max(20, "Username must be at most 10 characters")
         .regex(/^[A-Za-z0-9_@]+$/, "Only letters, numbers, underscores, and @ are allowed"),
+    branch: z.coerce
+        .number()
+        .gt(0, { message: 'Branch ID is empty!' }),
 
 });
 
@@ -114,6 +117,9 @@ const UpdateUserSchema = z.object({
         .min(6, "Password must be at least 6 characters")
         .optional()
         .or(z.literal("")), // allow empty string
+    branch: z.coerce
+        .number()
+        .gt(0, { message: 'Branch ID is empty!' }),
 }).refine(
     (data) => !data.password || data.password.length >= 6,
     {
@@ -166,6 +172,7 @@ const CreateBranch = BranchSchema.omit({ id: true });
 const UpdateBranch = BranchSchema.omit({ id: true });
 
 const CreateType = TypeSchema.omit({ id: true });
+const UpdateType = TypeSchema.omit({ id: true });
 
 export type State = {
     errors?: {
@@ -236,6 +243,7 @@ export type UserState = {
         name?: string[];
         password?: string[];
         username?: string[];
+        branch?: string[];
     };
     message?: string | null;
     error?: string | null;
@@ -246,6 +254,7 @@ export type UserUpdateState = {
     errors?: {
         name?: string[];
         password?: string[];
+        branch?: string[];
     };
     message?: string | null;
 };
@@ -719,10 +728,12 @@ export async function updateManagerAndAdminNotes(summissionId: number, prevState
 }
 
 export async function createUser(prevState: UserState, formData: FormData): Promise<UserState> {
+
     const validatedFields = CreateUser.safeParse({
         name: formData.get('name'),
         password: formData.get('password'),
         username: formData.get('username'),
+        branch: formData.get('branch')
     });
 
     if (!validatedFields.success) {
@@ -735,7 +746,7 @@ export async function createUser(prevState: UserState, formData: FormData): Prom
         } satisfies UserState;
     }
 
-    const { name, password, username } = validatedFields.data;
+    const { name, password, username, branch } = validatedFields.data;
     const hashedPassword = await hash(password, saltRounds)
     const email = String(formData.get('email') ?? '');
     const phone = String(formData.get('phone') ?? '');
@@ -744,8 +755,8 @@ export async function createUser(prevState: UserState, formData: FormData): Prom
     try {
 
         await sql`
-    INSERT INTO users (name, password, phone, user_name, role_id)
-    VALUES (${name},${hashedPassword},${phone},${username},${role})
+    INSERT INTO users (name, password, phone, user_name, role_id,branch_id)
+    VALUES (${name},${hashedPassword},${phone},${username},${role},${branch})
   `;
     } catch (error) {
 
@@ -775,7 +786,8 @@ export async function updateUser(id: string, prevState: UserUpdateState, formDat
     const validatedFields = UpdateUserSchema.safeParse({
         name: formData.get('name'),
         // username: formData.get('username'),
-        password: formData.get("password") || "",
+        password: formData.get("password"),
+        branch: formData.get('branch')
     });
 
     if (!validatedFields.success) {
@@ -785,25 +797,67 @@ export async function updateUser(id: string, prevState: UserUpdateState, formDat
         };
     }
 
-    const { name } = validatedFields.data;
-    const password = String(formData.get('password') ?? '');
-    const hashedPassword = await hash(password, saltRounds);
+    const { name, branch, password } = validatedFields.data;
+    // const password = String(formData.get('password') ?? '');
+    const updatePayload: {
+        name: string;
+        branch: number;
+        password?: string;
+    } = {
+        name,
+        branch,
+    };
+    let hashedPassword;
+    // Only hash and add password if provided
+    if (password && password.trim() !== '') {
+        hashedPassword = await hash(password, saltRounds);
+        updatePayload.password = hashedPassword;
+    }
     // const email = String(formData.get('email') ?? '');
     const phone = String(formData.get('phone') ?? '');
 
-    try {
-        await sql`
-        UPDATE users
-	SET name=${name}, password=${hashedPassword},phone=${phone}
-	WHERE id = ${id}   
-  `;
-    } catch (error) {
 
-        console.error(error);
-        // return {
-        //     message: 'Database Error: Failed to Create Invoice.',
-        // };
+
+
+    try {
+        if (hashedPassword) {
+            // Include password in update
+            await sql`
+            UPDATE users
+            SET name=${name}, password=${hashedPassword},phone=${phone},branch_id=${branch}
+            WHERE id = ${id}
+        `;
+        } else {
+            // Exclude password from update
+            await sql`
+            UPDATE users
+            SET name=${name},phone=${phone},branch_id=${branch}
+            WHERE id = ${id}
+        `;
+        }
+    } catch (error) {
+        console.error('Database error:', error);
+        // Handle error
     }
+
+
+
+
+
+
+    //     try {
+    //         await sql`
+    //         UPDATE users
+    // 	SET name=${name}, password=${hashedPassword},phone=${phone},branch_id=${branch}
+    // 	WHERE id = ${id}   
+    //   `;
+    //     } catch (error) {
+
+    //         console.error(error);
+    //         // return {
+    //         //     message: 'Database Error: Failed to Create Invoice.',
+    //         // };
+    //     }
     revalidatePath('/dashboard/users');
     redirect('/dashboard/users');
 
@@ -1161,7 +1215,49 @@ export async function disableBranch(id: string, is_valid: boolean) {
     revalidatePath('/dashboard/branches');
 
 }
+export async function updateBranch(id: string, prevState: BranchState, formData: FormData): Promise<BranchState> {
 
+    const validatedFields = UpdateBranch.safeParse({
+        branch: formData.get('branch'),
+        company: formData.get('company')
+        // is_valid: formData.get('is_valid')
+    });
+
+    console.log(formData.get('company'));
+    console.log(id);
+    console.log(formData.get('branch'));
+    if (!validatedFields.success) {
+        return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to update branch.',
+            error: null,
+            errors: validatedFields.error.flatten().fieldErrors,
+        } satisfies BranchState;
+    }
+
+    const { branch } = validatedFields.data;
+    const numericId = Number(id);
+    try {
+        await sql`
+  UPDATE branches
+  SET branch = ${branch}
+  WHERE id = ${numericId}
+`;
+    } catch (error) {
+
+        console.error(error);
+        return {
+            status: 'error' as const,
+            message: 'Failed to update branch',
+            error: 'Failed to update branch',
+            errors: {},
+        } satisfies BranchState;
+        // return { message: 'Database Error: Failed to Update Invoice.' };
+    }
+    revalidatePath('/dashboard/branches');
+    redirect('/dashboard/branches');
+
+}
 
 export async function acceptSubmissionAdminOrManager(summissionId: string) {
 
@@ -1247,6 +1343,47 @@ export async function disableType(id: string, is_valid: boolean) {
 
 }
 
+export async function updateType(id: string, prevState: TypeState, formData: FormData): Promise<TypeState> {
+
+    const validatedFields = UpdateType.safeParse({
+        type: formData.get('type'),
+        branch: formData.get('branch')
+        // is_valid: formData.get('is_valid')
+    });
+
+
+    if (!validatedFields.success) {
+        return {
+            status: 'error' as const,  // ✅ as const
+            message: 'Missing or invalid fields. Failed to update type.',
+            error: null,
+            errors: validatedFields.error.flatten().fieldErrors,
+        } satisfies TypeState;
+    }
+
+    const { type } = validatedFields.data;
+    const numericId = Number(id);
+    try {
+        await sql`
+  UPDATE types
+  SET type = ${type}
+  WHERE id = ${numericId}
+`;
+    } catch (error) {
+
+        console.error(error);
+        return {
+            status: 'error' as const,
+            message: 'Failed to update type',
+            error: 'Failed to update type',
+            errors: {},
+        } satisfies TypeState;
+        // return { message: 'Database Error: Failed to Update Invoice.' };
+    }
+    revalidatePath('/dashboard/types');
+    redirect('/dashboard/types');
+
+}
 
 
 
@@ -1258,7 +1395,7 @@ export async function rejectSubmissionAdminOrManager(summissionId: string) {
     if (!session?.user?.id) redirect("/login");
 
     const roleSlug = session.user.roleSlug;
-
+    const branch = session?.user?.branch;
 
     if (roleSlug === "admin" && summissionId !== undefined) {
         await sql`
@@ -1272,7 +1409,8 @@ export async function rejectSubmissionAdminOrManager(summissionId: string) {
         'submission_status',
         ${JSON.stringify({
             summissionId,
-            status: "rejected",        // e.g. 'admin_rejected'
+            status: "rejected",
+            branch_id: branch,       // e.g. 'admin_rejected'
             // message: `Your submission has been ${newStatus.replace('admin_', '').replace('_', ' ')}`
             message: "Your submission has been rejected"
         })}
@@ -1290,7 +1428,8 @@ export async function rejectSubmissionAdminOrManager(summissionId: string) {
         'submission_status',
         ${JSON.stringify({
             summissionId,
-            status: "rejected",        // e.g. 'admin_rejected'
+            status: "rejected",
+            branch_id: branch,      // e.g. 'admin_rejected'
             // message: `Your submission has been ${newStatus.replace('admin_', '').replace('_', ' ')}`
             message: "Your submission has been rejected"
         })}

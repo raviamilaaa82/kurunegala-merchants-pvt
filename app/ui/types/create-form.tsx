@@ -6,7 +6,7 @@ import { createType, TypeState } from '@/app/lib/actions';
 import { useActionState, useEffect, useState } from 'react';
 
 
-export default function Form({ branches }: { branches: Branches[] }) {
+export default function Form({ branches, branchId }: { branches: Branches[], branchId?: string }) {
   const initialState: TypeState = { status: null, errors: {}, message: null, error: null };
   // const initialState: TypeState = { message: null, errors: {} };
   const [state, formAction] = useActionState(createType, initialState);
@@ -16,6 +16,48 @@ export default function Form({ branches }: { branches: Branches[] }) {
   const [localMessage, setLocalMessage] = useState<string | null>(null);
   const [type, setType] = useState<string>('');
   const [branch, setBranch] = useState<string>('');
+  const [isCheckingTypeName, setIsCheckingTypeName] = useState(false);
+  const [typeNameError, setTypeNameError] = useState("");
+
+
+
+  const getFilteredBranches = () => {
+
+    // if ((roleSlug === 'agent' || roleSlug === 'admin') && branch) {
+    return branches.filter(b => b.id === Number(branchId));
+    // }
+    // return branches;
+  };
+
+  const filteredBranches = getFilteredBranches();
+
+
+
+  useEffect(() => {
+    if (!type) {
+      setTypeNameError("");
+      return;
+    }
+    // if (!userName) return;
+    setIsCheckingTypeName(true);
+    setTypeNameError("");
+
+    const timer = setTimeout(() => {
+      fetch(`/api/types/check-typename?type=${type}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.exists) {
+            setTypeNameError("Type Name already exists");
+          } else {
+            setTypeNameError("");
+          }
+        }).finally(() => setIsCheckingTypeName(false));
+    }, 500); // avoid spam
+
+    return () => clearTimeout(timer);
+  }, [type]);
+
+
 
 
   useEffect(() => {
@@ -77,10 +119,10 @@ export default function Form({ branches }: { branches: Branches[] }) {
               }
               }
             >
-              <option value="" disabled>
+              {/* <option value="" disabled>
                 Select a branch
-              </option>
-              {branches.map((branch) => (
+              </option> */}
+              {filteredBranches.map((branch) => (
                 <option key={branch.id} value={branch.id}>
                   {branch.branch}
                 </option>
@@ -126,6 +168,13 @@ export default function Form({ branches }: { branches: Branches[] }) {
                   {error}
                 </p>
               ))}
+
+            {isCheckingTypeName && (
+              <p className="text-gray-400 text-xs">Checking type name...</p>
+            )}
+            {typeNameError && (
+              <p className="text-red-500 text-xs">{typeNameError}</p>
+            )}
           </div>
         </div>
 
@@ -141,7 +190,7 @@ export default function Form({ branches }: { branches: Branches[] }) {
         >
           Cancel
         </Link>
-        <Button type="submit">Create Type</Button>
+        <Button type="submit" disabled={isCheckingTypeName || !!typeNameError} className="disabled:opacity-50 disabled:cursor-not-allowed">Create Type</Button>
       </div>
     </form>
   );

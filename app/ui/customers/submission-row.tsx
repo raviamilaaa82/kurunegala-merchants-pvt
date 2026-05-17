@@ -566,8 +566,9 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                     {/* Top: customer info */}
                     <div>
                         <div className="mb-2 flex items-center gap-3">
+                            {submission.address}
 
-                            {submission.loc_link ? (
+                            {/* {submission.loc_link ? (
 
                                 <Badge asChild variant="outline" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                     <a href={submission.loc_link} target="_blank">
@@ -576,7 +577,7 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                                 </Badge>) : (
                                 <span className="text-gray-400">—</span>
                             )
-                            }
+                            } */}
 
 
                         </div>
@@ -635,7 +636,8 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                 {/* <td className="bg-white px-4 py-5">{submission.customer_email}</td>
                 <td className="bg-white px-4 py-5">{submission.customer_mobile}</td> */}
                 <td className="bg-white px-4 py-5 text-sm">
-                    {submission.loc_link ? (
+                    {submission.address}
+                    {/* {submission.loc_link ? (
 
                         <Badge asChild variant="outline" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                             <a href={submission.loc_link} target="_blank">
@@ -644,19 +646,8 @@ export default function SubmissionRow({ submission, loggedInRoleSlug, variant = 
                         </Badge>) : (
                         <span className="text-gray-400">—</span>
                     )
-                    }
-                    {/* {submission.loc_link ? (
-                        <a
-                            href={submission.loc_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 underline"
-                        >
-                            View on Google Maps
-                        </a>
-                    ) : (
-                        <span className="text-gray-400">—</span>
-                    )} */}
+                    } */}
+
                 </td>
                 <td className="bg-white px-4 py-5">
 

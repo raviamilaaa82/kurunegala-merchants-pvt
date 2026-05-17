@@ -3,23 +3,32 @@ import { lusitana } from '@/app/ui/fonts';
 import Search from '@/app/ui/search';
 import {
   CustomersTableType,
-  FormattedCustomersTable,
+  FormattedCustomersTable, Types
 } from '@/app/lib/definitions';
-import { fetchFilteredTypes } from '@/app/lib/data';
-import { DisableType } from '@/app/ui/types/buttons';
+import { fetchFilteredTypes, fetchFilteredTypesByBranch } from '@/app/lib/data';
+import { DisableType, UpdateType } from '@/app/ui/types/buttons';
 import { Badge } from "@/components/ui/badge";
 
 export default async function TypesTable({
   query,
-  currentPage
+  currentPage,
+  roleSlug,
+  branchId,
   // customers,
 }: {
   query: string,
-  currentPage: number
+  currentPage: number,
+  roleSlug?: string,
+  branchId?: string,
   // customers: FormattedCustomersTable[];
 }) {
+  let types: Types[] = [];
+  if (roleSlug === 'admin') {
+    types = await fetchFilteredTypesByBranch(query, currentPage, branchId);
+  } else {
+    types = await fetchFilteredTypes(query, currentPage);
+  }
 
-  const types = await fetchFilteredTypes(query, currentPage);
 
   return (
     <div className="w-full">
@@ -134,7 +143,7 @@ export default async function TypesTable({
 
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         <div className="flex justify-end gap-3">
-                          {/* <UpdateBranch id={branch.id.toString()} /> */}
+                          <UpdateType id={type.id.toString()} />
                           <DisableType id={type.id.toString()} is_valid={type.is_valid} />
                         </div>
                       </td>

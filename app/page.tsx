@@ -17,7 +17,7 @@ export default function Page() {
             className="relative w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-black"
           /> */}
           <p className={`${lusitana.className} text-xl text-gray-800 md:text-3xl md:leading-normal`}>
-            <strong>Welcome to KML HOLDINGS (PVT)LTD</strong>
+            <strong>Welcome to KML GROUP</strong>
           </p>
           <Link
             href="/login"

@@ -5,16 +5,18 @@ import { formatDistanceToNow } from 'date-fns';
 
 export default async function HistoryTable({
   query,
-  currentPage
+  currentPage,
+  branchId,
   // customers,
 }: {
   query: string,
-  currentPage: number
+  currentPage: number,
+  branchId: string,
   // customers: FormattedCustomersTable[];
 }) {
 
   // const branches = await fetchFilteredBranch(query);
-  const activities = await fetchUserActivity(query, currentPage);
+  const activities = await fetchUserActivity(query, currentPage, branchId);
   return (
     <div className="w-full">
       {/* <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>

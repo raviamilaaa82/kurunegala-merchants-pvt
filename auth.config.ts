@@ -31,6 +31,7 @@ export const authConfig = {
                 token.roleSlug = user.roleSlug;
                 token.roleName = user.roleName;
                 token.permissions = user.permissions;
+                token.branch = user.branch;
             }
             return token;
         },
@@ -42,6 +43,7 @@ export const authConfig = {
             session.user.roleSlug = token.roleSlug as string;
             session.user.roleName = token.roleName as string;
             session.user.permissions = token.permissions as string[];
+            session.user.branch = token.branch as string;
             return session;
         },
 

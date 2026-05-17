@@ -10,6 +10,7 @@ export type User = {
   is_enabled: boolean,
   phone: string,
   user_name: string,
+  branch_id: string,
 };
 
 export type Customer = {

@@ -11,14 +11,21 @@ import {
 export default function BranchCompanyFilter({
     branches,
     allTypes,
+    branchId,
+    roleSlug,
 }: {
     branches: Branches[];
     allTypes: Types[];
+    branchId?: string;
+    roleSlug?: string;
 }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentBranch = searchParams.get('branch') || 'all';
     const currentType = searchParams.get('type') || 'all';
+
+    const isManagerOrSeniorManager = roleSlug ? ['manager', 'senior_manager'].includes(roleSlug) : false;
+    const isAgentOrAdmin = roleSlug ? ['agent', 'admin'].includes(roleSlug) : false;
 
     const handleBranchChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -35,10 +42,34 @@ export default function BranchCompanyFilter({
         router.push(`/dashboard/customers?${params.toString()}`);
     };
 
+
+
+    const getActiveBranchId = () => {
+        if (isManagerOrSeniorManager) {
+            // For managers: use the selected branch (could be 'all' or specific branch id)
+            return currentBranch;
+        }
+
+        if (isAgentOrAdmin) {
+            // For agents/admins: always use their assigned branch id
+            // No 'all' option available for them
+            return branchId;
+        }
+
+        return null;
+    };
+
+    const activeBranch = getActiveBranchId();
+
+
+
     // ✅ Filter types based on selected branch — no DB call needed
-    const filteredTypes = currentBranch === 'all'
+    const filteredTypes = activeBranch === 'all' || !activeBranch
         ? allTypes
-        : allTypes.filter((t) => Number(t.branch_id) === Number(currentBranch));
+        : allTypes.filter((t) => Number(t.branch_id) === Number(activeBranch));
+    // const filteredTypes = currentBranch === 'all'
+    //     ? allTypes
+    //     : allTypes.filter((t) => Number(t.branch_id) === Number(currentBranch));
 
     return (
         <>
@@ -56,8 +87,22 @@ export default function BranchCompanyFilter({
                                     aria-describedby="document-error"
                                     onChange={handleBranchChange}
                                 >
-                                    <option value="all">All</option>
-                                    {branches.map((branch) => (
+                                    {isManagerOrSeniorManager && (
+                                        <option key="all" value="all">
+                                            All
+                                        </option>
+                                    )}
+
+                                    {/* <option value="all">All</option> */}
+                                    {branches.filter(branch => {
+                                        if (isManagerOrSeniorManager) {
+                                            return true; // Show all branches
+                                        }
+                                        if (isAgentOrAdmin) {
+                                            return branch.id === Number(branchId); // Show only user's branch
+                                        }
+                                        return false;
+                                    }).map((branch) => (
                                         <option key={branch.id} value={branch.id}>
                                             {branch.branch}
                                         </option>
@@ -86,7 +131,12 @@ export default function BranchCompanyFilter({
                                     aria-describedby="document-error"
                                     onChange={handleTypeChange}
                                 >
-                                    <option value="all">All</option>
+                                    {isManagerOrSeniorManager && (
+                                        <option key="all" value="all">
+                                            All
+                                        </option>
+                                    )}
+                                    {/* <option value="all">All</option> */}
                                     {filteredTypes.map((type) => (
                                         <option key={type.id} value={type.id}>
                                             {type.type}
